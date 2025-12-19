@@ -2,6 +2,7 @@ import warnings
 import numpy as np
 from typing import Union
 import numbers
+
 class Distribution:
     def sample(self, n: int, rng: np.random.Generator) -> np.ndarray:
         """
@@ -117,20 +118,56 @@ class Uniform(Distribution):
         term1 = (low_v + high_v + (high_m - low_m) ** 2) / 12.0
         term2 = (low_v + high_v) / 4.0
         return term1 + term2
-    
+
+
 class LogNormal(Distribution):
-    def __init__(self, mu: float = 0.0, sigma: float = 1.0):
-        if sigma <= 0:
+    def __init__(self, mu: Union[float, Distribution] =0.0, sigma: Union[float, Distribution] =1.0):
+        if isinstance(sigma, numbers.Real) and sigma <= 0:
             raise ValueError("sigma must be positive.")
         self.mu = mu
         self.sigma = sigma
 
     def sample(self, n: int, rng: np.random.Generator) -> np.ndarray:
-        return rng.lognormal(mean=self.mu, sigma=self.sigma, size=n)
+        mu = self.mu.sample(n, rng) if isinstance(self.mu, Distribution) else self.mu
+        sigma = self.sigma.sample(n, rng) if isinstance(self.sigma, Distribution) else self.sigma
 
-    def mean(self) -> float:
-        return np.exp(self.mu + 0.5 * self.sigma ** 2)
+        if np.any(np.asarray(sigma) <= 0):
+            warnings.warn("Warning: Sigma <= 0 found, clamped to 1e-6.")
+            sigma = np.clip(sigma, a_min=1e-6, a_max=None)
+
+        return rng.lognormal(mean=mu, sigma=sigma, size=n)
+
+    def mean(self, _moment_mc_samples: int = 200_000,  _moment_seed: int = 0) -> float:
+        if not isinstance(self.mu, Distribution) and not isinstance(self.sigma, Distribution):
+            mu = float(self.mu)
+            sigma = float(self.sigma)
+            return float(np.exp(mu + 0.5 * sigma**2))
+
+        rng = np.random.default_rng(_moment_seed)
+
+        mu_s = self.mu.sample(_moment_mc_samples, rng) if isinstance(self.mu, Distribution) else np.full(_moment_mc_samples, self.mu)
+        sg_s = self.sigma.sample(_moment_mc_samples, rng) if isinstance(self.sigma, Distribution) else np.full(_moment_mc_samples, self.sigma)
+
+        sg_s = np.clip(sg_s, 1e-6, None)
+        return float(np.mean(np.exp(mu_s + 0.5 * sg_s**2)))
     
-    def var(self) -> float:
-        return (np.exp(self.sigma ** 2) - 1) * np.exp(2 * self.mu + self.sigma ** 2)
+    def var(self, _moment_mc_samples: int = 200_000, _moment_seed: int = 0) -> float:
+        if not isinstance(self.mu, Distribution) and not isinstance(self.sigma, Distribution):
+            mu = float(self.mu)
+            sigma = float(self.sigma)
+            return float((np.exp(sigma**2) - 1.0) * np.exp(2.0 * mu + sigma**2))
+
+        rng = np.random.default_rng(_moment_seed)
+
+        mu_s = self.mu.sample(_moment_mc_samples, rng) if isinstance(self.mu, Distribution) else np.full(_moment_mc_samples, self.mu)
+        sg_s = self.sigma.sample(_moment_mc_samples, rng) if isinstance(self.sigma, Distribution) else np.full(_moment_mc_samples, self.sigma)
+
+        sg_s = np.clip(sg_s, 1e-6, None)
+
+        # conditional moments
+        Ey_cond = np.exp(mu_s + 0.5 * sg_s**2)
+        Vy_cond = (np.exp(sg_s**2) - 1.0) * np.exp(2.0 * mu_s + sg_s**2)
+
+        # total variance
+        return float(np.mean(Vy_cond) + np.var(Ey_cond, ddof=0))
 
