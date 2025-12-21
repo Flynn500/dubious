@@ -5,10 +5,16 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "dubious"
 version = "0.1.0"
-description = "Dubious package"
+description = "Dubious is a Python library for propagating uncertainty through numerical computations"
+authors = [
+  { name="Flynn500", email="flynnwilson101@gmail.com" },
+]
 readme = "README.md"
 requires-python = ">=3.9"
-dependencies = []
+license = {file = "LICENSE"}
+dependencies = [
+  "numpy>=1.23",
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
