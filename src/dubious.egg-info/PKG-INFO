@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: dubious
-Version: 0.1.0
+Version: 0.1.1
 Summary: Dubious is a Python library for propagating uncertainty through numerical computations
 Author-email: Flynn500 <flynnwilson101@gmail.com>
 License: MIT License

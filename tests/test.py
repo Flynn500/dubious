@@ -11,7 +11,9 @@ ctx = Context()
 x = Uncertain(normal, ctx=ctx)
 y = Uncertain(normal2,ctx=ctx)
 
+normal3 = Normal(y+2, 3)
+
 x = x*y
 
-print(x.var())
+print(normal3.mean())
 
