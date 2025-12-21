@@ -106,7 +106,7 @@ class Normal(Distribution):
             sigma2 = s**2
         return sigma2 + mu_var
     
-    def quantile(self, q: float, n: int = 50000, rng: Generator | None = None, method: str = "linear") -> float:
+    def quantile(self, q: float, n: int = 50000, rng: Optional[np.random.Generator] = None, method: str = "linear") -> float:
         return super().quantile(q, n, rng, method)
 
 
@@ -118,7 +118,10 @@ class Uniform(Distribution):
         self.low = low
         self.high = high
 
-    def sample(self, n: int, rng: np.random.Generator) -> np.ndarray:
+    def sample(self, n: int, rng: Optional[np.random.Generator]) -> np.ndarray:
+        if rng is None:
+            rng = np.random.default_rng()
+        
         if isinstance(self.high, Distribution):
             high = self.high.sample(n, rng)
         else:
@@ -147,7 +150,7 @@ class Uniform(Distribution):
         term2 = (low_v + high_v) / 4.0
         return term1 + term2
     
-    def quantile(self, q: float, n: int = 50000, rng: Generator | None = None, method: str = "linear") -> float:
+    def quantile(self, q: float, n: int = 50000, rng: Optional[np.random.Generator] = None, method: str = "linear") -> float:
         return super().quantile(q, n, rng, method)
 
 
@@ -158,7 +161,10 @@ class LogNormal(Distribution):
         self.mu = mu
         self.sigma = sigma
 
-    def sample(self, n: int, rng: np.random.Generator) -> np.ndarray:
+    def sample(self, n: int, rng: Optional[np.random.Generator] = None) -> np.ndarray:
+        if rng is None:
+            rng = np.random.default_rng()
+
         mu = self.mu.sample(n, rng) if isinstance(self.mu, Distribution) else self.mu
         sigma = self.sigma.sample(n, rng) if isinstance(self.sigma, Distribution) else self.sigma
 
@@ -168,13 +174,14 @@ class LogNormal(Distribution):
 
         return rng.lognormal(mean=mu, sigma=sigma, size=n)
 
-    def mean(self, _moment_mc_samples: int = 200_000,  _moment_seed: int = 0) -> float:
+    def mean(self, _moment_mc_samples: int = 200_000, rng: Optional[np.random.Generator] = None,  _moment_seed: int = 0) -> float:
         if not isinstance(self.mu, Distribution) and not isinstance(self.sigma, Distribution):
             mu = float(self.mu)
             sigma = float(self.sigma)
             return float(np.exp(mu + 0.5 * sigma**2))
 
-        rng = np.random.default_rng(_moment_seed)
+        if rng is None:
+            rng = np.random.default_rng(_moment_seed)
 
         mu_s = self.mu.sample(_moment_mc_samples, rng) if isinstance(self.mu, Distribution) else np.full(_moment_mc_samples, self.mu)
         sg_s = self.sigma.sample(_moment_mc_samples, rng) if isinstance(self.sigma, Distribution) else np.full(_moment_mc_samples, self.sigma)
@@ -182,13 +189,14 @@ class LogNormal(Distribution):
         sg_s = np.clip(sg_s, 1e-6, None)
         return float(np.mean(np.exp(mu_s + 0.5 * sg_s**2)))
     
-    def var(self, _moment_mc_samples: int = 200_000, _moment_seed: int = 0) -> float:
+    def var(self, _moment_mc_samples: int = 200_000, rng: Optional[np.random.Generator] = None, _moment_seed: int = 0) -> float:
         if not isinstance(self.mu, Distribution) and not isinstance(self.sigma, Distribution):
             mu = float(self.mu)
             sigma = float(self.sigma)
             return float((np.exp(sigma**2) - 1.0) * np.exp(2.0 * mu + sigma**2))
 
-        rng = np.random.default_rng(_moment_seed)
+        if rng is None:
+            rng = np.random.default_rng(_moment_seed)
 
         mu_s = self.mu.sample(_moment_mc_samples, rng) if isinstance(self.mu, Distribution) else np.full(_moment_mc_samples, self.mu)
         sg_s = self.sigma.sample(_moment_mc_samples, rng) if isinstance(self.sigma, Distribution) else np.full(_moment_mc_samples, self.sigma)
@@ -200,5 +208,5 @@ class LogNormal(Distribution):
 
         return float(np.mean(Vy_cond) + np.var(Ey_cond, ddof=0))
     
-    def quantile(self, q: float, n: int = 50000, rng: Generator | None = None, method: str = "linear") -> float:
+    def quantile(self, q: float, n: int = 50000, rng: Optional[np.random.Generator] = None, method: str = "linear") -> float:
         return super().quantile(q, n, rng, method)

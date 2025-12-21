@@ -1,53 +1,59 @@
 from __future__ import annotations
 import numpy as np
 from typing import Any, Optional, Tuple, Union, Literal, cast
-from enum import Enum, auto
-from dataclasses import dataclass
-import itertools
-
-
-from dubious import Distribution
+from .node import Node, Op
+from .context import Context
+from .distributions import Distribution
 
 Number = Union[int, float, np.number]
 
-_node_ids = itertools.count(1)
-_node_registry: dict[int, Node] = {}
-
-class Op(Enum):
-    LEAF = auto()
-    CONST = auto()
-    ADD = auto()
-    SUB = auto()
-    MUL = auto()
-    DIV = auto()
-    NEG = auto()
-    POW = auto()
-    LOG = auto()
-
-@dataclass(frozen=True)
-class Node:
-    id: int
-    op: Op
-    parents: Tuple[int, ...]
-    payload: Optional[Any] = None #distrubtion, constant number etc
-
-    def __post_init__(self):
-        _node_registry[self.id] = self
-
 class Uncertain():
-    def __init__(self, dist: Optional[Distribution] = None, _node: Optional[Node] = None,):
+    def __init__(self, dist: Optional[Distribution] = None, *, ctx: Optional[Context],_node: Optional[Node] = None,):
+        self._ctx = ctx or Context()
         if _node is not None:
+            if ctx is None:
+                raise ValueError("ctx must be provided when constructing from an existing _node.")
+            
             self._node = _node
+
         else:
             if dist is None:
                 raise ValueError("Distribution required.")
-            self._node = Node(
-                id=next(_node_ids),
-                op=Op.LEAF,
-                parents=(),
-                payload=dist,
-            )
+            
+            self._node = self._ctx.add_node(Op.LEAF, parents=(), payload=dist)
     
+    @property
+    def node_id(self): return self._node.id
+
+    @property
+    def node(self): return self._node
+
+    @property
+    def ctx(self) -> Context:
+        return self._ctx
+
+    #create uncertain objects from numbers
+    @staticmethod
+    def const(x: Number, ctx: Context) -> Uncertain:
+        node = ctx.add_node(Op.CONST, parents=(), payload=float(x))
+        return Uncertain(ctx=ctx, _node=node)
+
+    #create an Uncertain object if we recieve a number, else it already is an uncertain so return
+    @staticmethod
+    def _coerce(other: Union[Uncertain, Number], ctx: Context) -> Uncertain:
+        return other if isinstance(other, Uncertain) else Uncertain.const(other, ctx=ctx)
+
+    
+    @staticmethod
+    def _ensure_same_ctx(a: "Uncertain", b: "Uncertain"):
+        if a.ctx is not b.ctx:
+            raise ValueError(
+                "Cannot combine Uncertain values from different contexts (graphs). "
+                "Create them with the same ctx=... or implement/enable context merging."
+            )
+
+
+    #statistical methods
     def sample(self, n: int, rng: Optional[np.random.Generator] = None) -> np.ndarray:
         if rng is None:
             rng = np.random.default_rng()
@@ -83,72 +89,67 @@ class Uncertain():
             method,
         )
         return float(np.quantile(s, q, method=method_lit))
-    @property
-    def node_id(self): return self._node.id
 
-    @property
-    def node(self): return self._node
-
-    #create uncertain objects from numbers
-    @staticmethod
-    def const(x: Number) -> Uncertain:
-        return Uncertain(_node=Node(
-            id=next(_node_ids),
-            op=Op.CONST,
-            parents=(),
-            payload=float(x),
-        ))
-
-    #create an Uncertain object if we recieve a number, else it already is an uncertain so return
-    @staticmethod
-    def _coerce(other: Union[Uncertain, Number]) -> Uncertain:
-        return other if isinstance(other, Uncertain) else Uncertain.const(other)
-
-    #creates operation nodes within our tree, + - * / etc.
-    @staticmethod
-    def _make(op: Op, *parents: Uncertain, payload=None) -> Uncertain:
-        return Uncertain(_node=Node(
-            id=next(_node_ids),
-            op=op,
-            parents=tuple(p.node_id for p in parents),
-            payload=payload,
-        ))
 
     #our arithmatic operations
-    def __add__(self, other: Union[Uncertain, Number]) -> Uncertain:
-        o = Uncertain._coerce(other)
-        return Uncertain._make(Op.ADD, self, o)
+    def __add__(self, other: Union["Uncertain", Number]) -> "Uncertain":
+        o = Uncertain._coerce(other, ctx=self.ctx)
+        Uncertain._ensure_same_ctx(self, o)
+        node = self.ctx.add_node(Op.ADD, parents=(self.node_id, o.node_id))
+        return Uncertain(ctx=self.ctx, _node=node)
 
-    def __radd__(self, other: Union[Uncertain, Number]) -> Uncertain:
-        return Uncertain._coerce(other).__add__(self)
+    def __radd__(self, other: Union["Uncertain", Number]) -> "Uncertain":
+        return self.__add__(other)
 
-    def __sub__(self, other: Union[Uncertain, Number]) -> Uncertain:
-        o = Uncertain._coerce(other)
-        return Uncertain._make(Op.SUB, self, o)
+    def __sub__(self, other: Union["Uncertain", Number]) -> "Uncertain":
+        o = Uncertain._coerce(other, ctx=self.ctx)
+        Uncertain._ensure_same_ctx(self, o)
+        node = self.ctx.add_node(Op.SUB, parents=(self.node_id, o.node_id))
+        return Uncertain(ctx=self.ctx, _node=node)
 
-    def __rsub__(self, other: Union[Uncertain, Number]) -> Uncertain:
-        return Uncertain._coerce(other).__sub__(self)
+    def __rsub__(self, other: Union["Uncertain", Number]) -> "Uncertain":
+        o = Uncertain._coerce(other, ctx=self.ctx)
+        Uncertain._ensure_same_ctx(o, self)
+        node = self.ctx.add_node(Op.SUB, parents=(o.node_id, self.node_id))
+        return Uncertain(ctx=self.ctx, _node=node)
+
+    def __mul__(self, other: Union["Uncertain", Number]) -> "Uncertain":
+        o = Uncertain._coerce(other, ctx=self.ctx)
+        Uncertain._ensure_same_ctx(self, o)
+        node = self.ctx.add_node(Op.MUL, parents=(self.node_id, o.node_id))
+        return Uncertain(ctx=self.ctx, _node=node)
     
-    def __mul__(self, other: Union[Uncertain, Number]) -> Uncertain:
-        o = Uncertain._coerce(other)
-        return Uncertain._make(Op.MUL, self, o)
+    def __rmul__(self, other: Union["Uncertain", Number]) -> "Uncertain":
+        return self.__mul__(other)
 
-    def __rmul__(self, other: Union[Uncertain, Number]) -> Uncertain:
-        return Uncertain._coerce(other).__mul__(self)
+    def __truediv__(self, other: Union["Uncertain", Number]) -> "Uncertain":
+        o = Uncertain._coerce(other, ctx=self.ctx)
+        Uncertain._ensure_same_ctx(self, o)
+        node = self.ctx.add_node(Op.DIV, parents=(self.node_id, o.node_id))
+        return Uncertain(ctx=self.ctx, _node=node)
+    
+    def __rtruediv__(self, other: Union["Uncertain", Number]) -> "Uncertain":
+        o = Uncertain._coerce(other, ctx=self.ctx)
+        Uncertain._ensure_same_ctx(o, self)
+        node = self.ctx.add_node(Op.DIV, parents=(o.node_id, self.node_id))
+        return Uncertain(ctx=self.ctx, _node=node)
 
-    def __truediv__(self, other: Union[Uncertain, Number]) -> Uncertain:
-        o = Uncertain._coerce(other)
-        return Uncertain._make(Op.DIV, self, o)
+    def __neg__(self) -> "Uncertain":
+        node = self.ctx.add_node(Op.NEG, parents=(self.node_id,))
+        return Uncertain(ctx=self.ctx, _node=node)
 
-    def __rtruediv__(self, other: Union[Uncertain, Number]) -> Uncertain:
-        return Uncertain._coerce(other).__truediv__(self)
+    def __pow__(self, power: Union["Uncertain", Number]) -> "Uncertain":
+        p = Uncertain._coerce(power, ctx=self.ctx)
+        Uncertain._ensure_same_ctx(self, p)
+        node = self.ctx.add_node(Op.POW, parents=(self.node_id, p.node_id))
+        return Uncertain(ctx=self.ctx, _node=node)
+    
+    def __rpow__(self, other: Union["Uncertain", Number]) -> "Uncertain":
+        o = Uncertain._coerce(other, ctx=self.ctx)
+        Uncertain._ensure_same_ctx(o, self)
+        node = self.ctx.add_node(Op.POW, parents=(o.node_id, self.node_id))
+        return Uncertain(ctx=self.ctx, _node=node)
 
-    def __neg__(self) -> Uncertain:
-        return Uncertain._make(Op.NEG, self)
-
-    def __pow__(self, power: Union[Uncertain, Number]) -> Uncertain:
-        p = Uncertain._coerce(power)
-        return Uncertain._make(Op.POW, self, p)
     
 
 def sample_uncertain(u: Uncertain,n: int,rng: np.random.Generator) -> np.ndarray:
@@ -162,12 +163,13 @@ def sample_uncertain(u: Uncertain,n: int,rng: np.random.Generator) -> np.ndarray
         np.ndarray: Array of sampled points.
     """
     cache: dict[int, np.ndarray] = {}
+    ctx = u.ctx
 
     def eval_node(node_id: int) -> np.ndarray:
         if node_id in cache:
             return cache[node_id]
 
-        node = _node_registry[node_id]
+        node = ctx.get(node_id)
 
         if node.op == Op.LEAF:
             if node.payload is None:
