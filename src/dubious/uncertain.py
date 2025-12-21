@@ -8,8 +8,11 @@ from .distributions import Distribution
 Number = Union[int, float, np.number]
 
 class Uncertain():
-    def __init__(self, dist: Optional[Distribution] = None, *, ctx: Optional[Context],_node: Optional[Node] = None,):
-        self._ctx = ctx or Context()
+    def __init__(self, dist: Optional[Distribution] = None, *, ctx: Optional[Context] = None,_node: Optional[Node] = None,):
+        if ctx is None:
+            self._ctx = Context()
+        else: self._ctx = ctx
+
         if _node is not None:
             if ctx is None:
                 raise ValueError("ctx must be provided when constructing from an existing _node.")
@@ -48,30 +51,57 @@ class Uncertain():
     def _ensure_same_ctx(a: "Uncertain", b: "Uncertain"):
         if a.ctx is not b.ctx:
             raise ValueError(
-                "Cannot combine Uncertain values from different contexts (graphs). "
-                "Create them with the same ctx=... or implement/enable context merging."
+                "Cannot combine Uncertain values from different contexts. "
+                "Create them with the same ctx=..."
             )
 
 
     #statistical methods
     def sample(self, n: int, rng: Optional[np.random.Generator] = None) -> np.ndarray:
+        """
+        Sample points from a distribution
+        Args:
+            n (int): Number of samples.
+            rng (np.random.Generator): Numpy random generator.
+        Returns:
+            np.ndarray: Array of sampled points.
+        """
         if rng is None:
             rng = np.random.default_rng()
         return sample_uncertain(self, n, rng)
 
     def mean(self, n: int = 20_000, rng: Optional[np.random.Generator] = None) -> float:
+        """
+        Get the mean of a distribution
+        Returns:
+            float: mean
+        """
         if rng is None:
             rng = np.random.default_rng()
         s = self.sample(n, rng)
         return float(np.mean(s))
     
     def var(self, n: int = 20_000, rng: Optional[np.random.Generator] = None, ddof: int = 1):
+        """
+        Get the variance of a distribution
+        Returns:
+            float: variance
+        """
         if rng is None:
             rng = np.random.default_rng()
         s = self.sample(n, rng)
         return float(np.var(s, ddof=ddof))
     
     def quantile(self, q: float, n: int = 50_000, rng: Optional[np.random.Generator] = None, method: str = "linear",) -> float:
+        """
+        Compute the q-th quantile of data.
+        Args:
+            q (float): Probabilty of quantiles to compute.
+            n (int): Number of samples.
+            rng (np.random.Generator): Numpy random generator.
+        Returns:
+            float: quantile
+        """
         if not (0.0 <= q <= 1.0):
             raise ValueError("q must be between 0 and 1.")
         if rng is None:

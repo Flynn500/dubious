@@ -21,7 +21,7 @@ class Distribution:
     @abstractmethod
     def mean(self) -> float:
         """
-        Mean of a distribution
+        Get the mean of a distribution
         Returns:
             float: mean
         """
@@ -30,7 +30,7 @@ class Distribution:
     @abstractmethod
     def var(self) -> float:
         """
-        Variance of a distribution
+        Get the variance of a distribution
         Returns:
             float: variance
         """
@@ -38,6 +38,15 @@ class Distribution:
     
     @abstractmethod
     def quantile(self, q: float, n: int = 50_000, rng: Optional[np.random.Generator] = None, method: str = "linear",) -> float:
+        """
+        Compute the q-th quantile of data.
+        Args:
+            q (float): Probabilty of quantiles to compute.
+            n (int): Number of samples.
+            rng (np.random.Generator): Numpy random generator.
+        Returns:
+            float: quantile
+        """
         if not (0.0 <= q <= 1.0):
             raise ValueError("q must be between 0 and 1.")
         if rng is None:

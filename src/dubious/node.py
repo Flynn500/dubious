@@ -1,9 +1,7 @@
 from __future__ import annotations
-import numpy as np
-from typing import Any, Optional, Tuple, Union, Literal, cast
+from typing import Any, Optional, Tuple
 from enum import Enum, auto
 from dataclasses import dataclass
-import itertools
 
 class Op(Enum):
     LEAF = auto()
@@ -22,6 +20,3 @@ class Node:
     op: Op
     parents: Tuple[int, ...]
     payload: Optional[Any] = None #distrubtion, constant number etc
-
-    # def __post_init__(self):
-    #     _node_registry[self.id] = self

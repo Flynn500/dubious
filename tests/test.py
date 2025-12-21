@@ -2,16 +2,16 @@ import numpy as np
 from dubious import Normal, LogNormal, Uncertain, sample_uncertain, Context
 
 
-normal = Normal(1, 0.1)
-log_normal = Normal(10, 0.1)
+normal = Normal(1, 1)
+normal2 = Normal(5, 1)
 
 rng = np.random.Generator(np.random.PCG64())
 ctx = Context()
+
 x = Uncertain(normal, ctx=ctx)
-y = Uncertain(log_normal,ctx=ctx)
+y = Uncertain(normal2,ctx=ctx)
 
-result = x + y
+x = x*y
 
-print(sample_uncertain(result, 10, rng))
-
+print(x.var())
 
