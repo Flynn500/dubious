@@ -1,6 +1,6 @@
 from __future__ import annotations
 import numpy as np
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Optional, Tuple, Union, Literal, cast
 from enum import Enum, auto
 from dataclasses import dataclass
 import itertools
@@ -22,6 +22,7 @@ class Op(Enum):
     DIV = auto()
     NEG = auto()
     POW = auto()
+    LOG = auto()
 
 @dataclass(frozen=True)
 class Node:
@@ -46,7 +47,42 @@ class Uncertain():
                 parents=(),
                 payload=dist,
             )
+    
+    def sample(self, n: int, rng: Optional[np.random.Generator] = None) -> np.ndarray:
+        if rng is None:
+            rng = np.random.default_rng()
+        return sample_uncertain(self, n, rng)
 
+    def mean(self, n: int = 20_000, rng: Optional[np.random.Generator] = None) -> float:
+        if rng is None:
+            rng = np.random.default_rng()
+        s = self.sample(n, rng)
+        return float(np.mean(s))
+    
+    def var(self, n: int = 20_000, rng: Optional[np.random.Generator] = None, ddof: int = 1):
+        if rng is None:
+            rng = np.random.default_rng()
+        s = self.sample(n, rng)
+        return float(np.var(s, ddof=ddof))
+    
+    def quantile(self, q: float, n: int = 50_000, rng: Optional[np.random.Generator] = None, method: str = "linear",) -> float:
+        if not (0.0 <= q <= 1.0):
+            raise ValueError("q must be between 0 and 1.")
+        if rng is None:
+            rng = np.random.default_rng()
+        s = self.sample(n, rng)
+
+        #cast to avoid numpy getting mad
+        method_lit = cast(
+            Literal[
+                "inverted_cdf", "averaged_inverted_cdf",
+                "closest_observation", "interpolated_inverted_cdf",
+                "hazen", "weibull", "linear", "median_unbiased",
+                "normal_unbiased"
+            ],
+            method,
+        )
+        return float(np.quantile(s, q, method=method_lit))
     @property
     def node_id(self): return self._node.id
 
@@ -83,28 +119,28 @@ class Uncertain():
         o = Uncertain._coerce(other)
         return Uncertain._make(Op.ADD, self, o)
 
-    def __radd__(self, other: Number) -> Uncertain:
+    def __radd__(self, other: Union[Uncertain, Number]) -> Uncertain:
         return Uncertain._coerce(other).__add__(self)
 
     def __sub__(self, other: Union[Uncertain, Number]) -> Uncertain:
         o = Uncertain._coerce(other)
         return Uncertain._make(Op.SUB, self, o)
 
-    def __rsub__(self, other: Number) -> Uncertain:
+    def __rsub__(self, other: Union[Uncertain, Number]) -> Uncertain:
         return Uncertain._coerce(other).__sub__(self)
-
+    
     def __mul__(self, other: Union[Uncertain, Number]) -> Uncertain:
         o = Uncertain._coerce(other)
         return Uncertain._make(Op.MUL, self, o)
 
-    def __rmul__(self, other: Number) -> Uncertain:
+    def __rmul__(self, other: Union[Uncertain, Number]) -> Uncertain:
         return Uncertain._coerce(other).__mul__(self)
 
     def __truediv__(self, other: Union[Uncertain, Number]) -> Uncertain:
         o = Uncertain._coerce(other)
         return Uncertain._make(Op.DIV, self, o)
 
-    def __rtruediv__(self, other: Number) -> Uncertain:
+    def __rtruediv__(self, other: Union[Uncertain, Number]) -> Uncertain:
         return Uncertain._coerce(other).__truediv__(self)
 
     def __neg__(self) -> Uncertain:
@@ -115,7 +151,16 @@ class Uncertain():
         return Uncertain._make(Op.POW, self, p)
     
 
-def sample_uncertain(u: Uncertain,n: int,rng: np.random.Generator,) -> np.ndarray:
+def sample_uncertain(u: Uncertain,n: int,rng: np.random.Generator) -> np.ndarray:
+    """
+    Sample points from a composite distribution.
+        Args:
+            u (Uncertain) Uncertain object to sample.
+            n (int): Number of samples.
+            rng (np.random.Generator): Numpy random generator.
+    Returns:
+        np.ndarray: Array of sampled points.
+    """
     cache: dict[int, np.ndarray] = {}
 
     def eval_node(node_id: int) -> np.ndarray:

@@ -1,9 +1,12 @@
 import warnings
+from matplotlib.pylab import Generator
 import numpy as np
-from typing import Union
+from typing import Union, Optional, cast, Literal
 import numbers
+from abc import abstractmethod
 
 class Distribution:
+    @abstractmethod
     def sample(self, n: int, rng: np.random.Generator) -> np.ndarray:
         """
         Sample points from a distribution
@@ -15,6 +18,7 @@ class Distribution:
         """
         raise NotImplementedError
     
+    @abstractmethod
     def mean(self) -> float:
         """
         Mean of a distribution
@@ -23,6 +27,7 @@ class Distribution:
         """
         raise NotImplementedError
     
+    @abstractmethod
     def var(self) -> float:
         """
         Variance of a distribution
@@ -30,6 +35,26 @@ class Distribution:
             float: variance
         """
         raise NotImplementedError
+    
+    @abstractmethod
+    def quantile(self, q: float, n: int = 50_000, rng: Optional[np.random.Generator] = None, method: str = "linear",) -> float:
+        if not (0.0 <= q <= 1.0):
+            raise ValueError("q must be between 0 and 1.")
+        if rng is None:
+            rng = np.random.default_rng()
+        s = self.sample(n, rng)
+
+        #cast to avoid numpy getting mad
+        method_lit = cast(
+            Literal[
+                "inverted_cdf", "averaged_inverted_cdf",
+                "closest_observation", "interpolated_inverted_cdf",
+                "hazen", "weibull", "linear", "median_unbiased",
+                "normal_unbiased"
+            ],
+            method,
+        )
+        return float(np.quantile(s, q, method=method_lit))
     
     
 
@@ -80,6 +105,9 @@ class Normal(Distribution):
             s = float(self.sigma)
             sigma2 = s**2
         return sigma2 + mu_var
+    
+    def quantile(self, q: float, n: int = 50000, rng: Generator | None = None, method: str = "linear") -> float:
+        return super().quantile(q, n, rng, method)
 
 
 class Uniform(Distribution):
@@ -118,6 +146,9 @@ class Uniform(Distribution):
         term1 = (low_v + high_v + (high_m - low_m) ** 2) / 12.0
         term2 = (low_v + high_v) / 4.0
         return term1 + term2
+    
+    def quantile(self, q: float, n: int = 50000, rng: Generator | None = None, method: str = "linear") -> float:
+        return super().quantile(q, n, rng, method)
 
 
 class LogNormal(Distribution):
@@ -164,10 +195,10 @@ class LogNormal(Distribution):
 
         sg_s = np.clip(sg_s, 1e-6, None)
 
-        # conditional moments
         Ey_cond = np.exp(mu_s + 0.5 * sg_s**2)
         Vy_cond = (np.exp(sg_s**2) - 1.0) * np.exp(2.0 * mu_s + sg_s**2)
 
-        # total variance
         return float(np.mean(Vy_cond) + np.var(Ey_cond, ddof=0))
-
+    
+    def quantile(self, q: float, n: int = 50000, rng: Generator | None = None, method: str = "linear") -> float:
+        return super().quantile(q, n, rng, method)
