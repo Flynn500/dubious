@@ -1,5 +1,5 @@
 # Dubious
-<p>A python library for handling uncertain data. In cases where you need to apply numeric operations to several variables, each with varying degrees of uncertainty, you can calculate said uncertainty by applying those numeric operations to their distributions. This information is held in a graph, and only when wish to sample or get metrics is their combined distribution calculated and sampled from.</p>
+<p>Dubious is a Python library for propagating uncertainty through numerical computations. Instead of collapsing uncertain values into single numbers early, Dubious lets you represent values as probability distributions, combine them with normal arithmetic operations, and only evaluate the resulting uncertainty when you explicitly ask for it.</p>
 
 <h3>Distribution Objects</h3>
 <p>Currenlty only supporting Normal, LogNormal and Uniform distributions. For each you can get mean, variance and sample from them. Distribution objects also support using other distribution objects for their parameters</p>
