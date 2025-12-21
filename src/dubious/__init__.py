@@ -1,7 +1,7 @@
-from .distributions import Normal, Distribution, LogNormal, Uniform
+from .distributions import Normal, Distribution, LogNormal, Uniform, Beta
 from .uncertain import Uncertain, sample_uncertain
 from .uncertain import Context
 
-__all__ = ["Distribution", "Normal", "Uniform", "LogNormal", #dists
+__all__ = ["Distribution", "Normal", "Uniform", "LogNormal", "Beta", #dists
            "Uncertain", "Context", 
            "sample_uncertain"]

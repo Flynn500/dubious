@@ -37,7 +37,7 @@ class Distribution:
         raise NotImplementedError
     
     @abstractmethod
-    def quantile(self, q: float, n: int = 50_000, rng: Optional[np.random.Generator] = None, method: str = "linear",) -> float:
+    def quantile(self, q: float, n: int = 50000, *, rng: Optional[np.random.Generator] = None, method: str = "linear", seed: int = 0) -> float:
         """
         Compute the q-th quantile of data.
         Args:
@@ -50,7 +50,7 @@ class Distribution:
         if not (0.0 <= q <= 1.0):
             raise ValueError("q must be between 0 and 1.")
         if rng is None:
-            rng = np.random.default_rng()
+            rng = np.random.default_rng(seed)
         s = self.sample(n, rng)
 
         #cast to avoid numpy getting mad
@@ -83,7 +83,10 @@ class Normal(Distribution):
         self.mu = mu
         self.sigma = sigma
 
-    def sample(self, n: int, rng: np.random.Generator) -> np.ndarray:
+    def sample(self, n: int, *, rng: np.random.Generator, seed: int = 0) -> np.ndarray:
+        if rng is None:
+            rng = np.random.default_rng(seed)
+
         if isinstance(self.mu, Distribution):
             mu = self.mu.sample(n, rng)
         else:
@@ -115,8 +118,8 @@ class Normal(Distribution):
             sigma2 = s**2
         return sigma2 + mu_var
     
-    def quantile(self, q: float, n: int = 50000, rng: Optional[np.random.Generator] = None, method: str = "linear") -> float:
-        return super().quantile(q, n, rng, method)
+    def quantile(self, q: float, n: int = 50000, *, rng: Generator | None = None, method: str = "linear", seed: int = 0) -> float:
+        return super().quantile(q, n, rng=rng, method=method, seed=seed)
 
 
 class Uniform(Distribution):
@@ -127,9 +130,9 @@ class Uniform(Distribution):
         self.low = low
         self.high = high
 
-    def sample(self, n: int, rng: Optional[np.random.Generator]) -> np.ndarray:
+    def sample(self, n: int, *, rng: Optional[np.random.Generator], seed: int = 0) -> np.ndarray:
         if rng is None:
-            rng = np.random.default_rng()
+            rng = np.random.default_rng(seed)
         
         if isinstance(self.high, Distribution):
             high = self.high.sample(n, rng)
@@ -159,8 +162,8 @@ class Uniform(Distribution):
         term2 = (low_v + high_v) / 4.0
         return term1 + term2
     
-    def quantile(self, q: float, n: int = 50000, rng: Optional[np.random.Generator] = None, method: str = "linear") -> float:
-        return super().quantile(q, n, rng, method)
+    def quantile(self, q: float, n: int = 50000, *, rng: Generator | None = None, method: str = "linear", seed: int = 0) -> float:
+        return super().quantile(q, n, rng=rng, method=method, seed=seed)
 
 
 class LogNormal(Distribution):
@@ -170,9 +173,9 @@ class LogNormal(Distribution):
         self.mu = mu
         self.sigma = sigma
 
-    def sample(self, n: int, rng: Optional[np.random.Generator] = None) -> np.ndarray:
+    def sample(self, n: int, *, rng: Optional[np.random.Generator] = None, seed: int = 0) -> np.ndarray:
         if rng is None:
-            rng = np.random.default_rng()
+            rng = np.random.default_rng(seed)
 
         mu = self.mu.sample(n, rng) if isinstance(self.mu, Distribution) else self.mu
         sigma = self.sigma.sample(n, rng) if isinstance(self.sigma, Distribution) else self.sigma
@@ -183,32 +186,50 @@ class LogNormal(Distribution):
 
         return rng.lognormal(mean=mu, sigma=sigma, size=n)
 
-    def mean(self, _moment_mc_samples: int = 200_000, rng: Optional[np.random.Generator] = None,  _moment_seed: int = 0) -> float:
+    def mean(self, n: int = 200_000, *, rng: Optional[np.random.Generator] = None,  seed: int = 0) -> float:
+        """
+        Get the mean of a distribution
+        Args:
+            n (int): Only applies when paramaters are distributions. Number of samples used in MC aproximation.
+            rng (np.random.Generator): Random generator to use when sampling.
+            seed (int): RNG seed.
+        Returns:
+            float: mean
+        """
         if not isinstance(self.mu, Distribution) and not isinstance(self.sigma, Distribution):
             mu = float(self.mu)
             sigma = float(self.sigma)
             return float(np.exp(mu + 0.5 * sigma**2))
 
         if rng is None:
-            rng = np.random.default_rng(_moment_seed)
+            rng = np.random.default_rng(seed)
 
-        mu_s = self.mu.sample(_moment_mc_samples, rng) if isinstance(self.mu, Distribution) else np.full(_moment_mc_samples, self.mu)
-        sg_s = self.sigma.sample(_moment_mc_samples, rng) if isinstance(self.sigma, Distribution) else np.full(_moment_mc_samples, self.sigma)
+        mu_s = self.mu.sample(n, rng) if isinstance(self.mu, Distribution) else np.full(n, self.mu)
+        sg_s = self.sigma.sample(n, rng) if isinstance(self.sigma, Distribution) else np.full(n, self.sigma)
 
         sg_s = np.clip(sg_s, 1e-6, None)
         return float(np.mean(np.exp(mu_s + 0.5 * sg_s**2)))
     
-    def var(self, _moment_mc_samples: int = 200_000, rng: Optional[np.random.Generator] = None, _moment_seed: int = 0) -> float:
+    def var(self, n: int = 200_000, *, rng: Optional[np.random.Generator] = None, seed: int = 0) -> float:
+        """
+        Get the variance of a distribution
+        Args:
+            n (int): Only applies when paramaters are distributions. Number of samples used in MC aproximation.
+            rng (np.random.Generator): Random generator to use when sampling.
+            seed (int): RNG seed.
+        Returns:
+            float: mean
+        """
         if not isinstance(self.mu, Distribution) and not isinstance(self.sigma, Distribution):
             mu = float(self.mu)
             sigma = float(self.sigma)
             return float((np.exp(sigma**2) - 1.0) * np.exp(2.0 * mu + sigma**2))
 
         if rng is None:
-            rng = np.random.default_rng(_moment_seed)
+            rng = np.random.default_rng(seed)
 
-        mu_s = self.mu.sample(_moment_mc_samples, rng) if isinstance(self.mu, Distribution) else np.full(_moment_mc_samples, self.mu)
-        sg_s = self.sigma.sample(_moment_mc_samples, rng) if isinstance(self.sigma, Distribution) else np.full(_moment_mc_samples, self.sigma)
+        mu_s = self.mu.sample(n, rng) if isinstance(self.mu, Distribution) else np.full(n, self.mu)
+        sg_s = self.sigma.sample(n, rng) if isinstance(self.sigma, Distribution) else np.full(n, self.sigma)
 
         sg_s = np.clip(sg_s, 1e-6, None)
 
@@ -217,5 +238,103 @@ class LogNormal(Distribution):
 
         return float(np.mean(Vy_cond) + np.var(Ey_cond, ddof=0))
     
-    def quantile(self, q: float, n: int = 50000, rng: Optional[np.random.Generator] = None, method: str = "linear") -> float:
-        return super().quantile(q, n, rng, method)
+    def quantile(self, q: float, n: int = 50000, *, rng: Generator | None = None, method: str = "linear", seed: int = 0) -> float:
+        return super().quantile(q, n, rng=rng, method=method, seed=seed)
+
+
+class Beta(Distribution):
+    def __init__(self, alpha: Union[float, Distribution] = 1.0, beta: Union[float, Distribution] = 1.0):
+        if isinstance(alpha, numbers.Real) and alpha <= 0:
+            raise ValueError("alpha must be positive.")
+        if isinstance(beta, numbers.Real) and beta <= 0:
+            raise ValueError("beta must be positive.")
+        self.alpha = alpha
+        self.beta = beta
+
+    def sample(self, n: int, *, rng: Optional[np.random.Generator] = None, seed: int = 0) -> np.ndarray:
+        if rng is None:
+            rng = np.random.default_rng(seed)
+
+        if isinstance(self.alpha, Distribution):
+            a = self.alpha.sample(n, rng)
+        else:
+            a = self.alpha
+
+        if isinstance(self.beta, Distribution):
+            b = self.beta.sample(n, rng)
+        else:
+            b = self.beta
+        
+        a_arr = np.asarray(a)
+        b_arr = np.asarray(b)
+
+        bad = (a_arr <= 0) | (b_arr <= 0)
+        if np.any(bad):
+            warnings.warn("Warning: alpha <= 0 or beta <= 0 found, clamped to 1e-6.")
+            a_arr = np.clip(a_arr, a_min=1e-6, a_max=None)
+            b_arr = np.clip(b_arr, a_min=1e-6, a_max=None)
+
+        return rng.beta(a_arr, b_arr, size=n)
+    
+    def mean(self, n=200_000, *, rng: Optional[np.random.Generator] = None, seed: int = 0) -> float:
+        """
+        Get the mean of a distribution
+        Args:
+            n (int): Only applies when paramaters are distributions. Number of samples used in MC aproximation.
+            rng (np.random.Generator): Random generator to use when sampling.
+            seed (int): RNG seed.
+        Returns:
+            float: mean
+        """
+        if not isinstance(self.alpha, Distribution) and not isinstance(self.beta, Distribution):
+            a = float(self.alpha)
+            b = float(self.beta)
+            return a / (a + b)
+
+        if rng is None:
+            rng = np.random.default_rng(seed)
+        
+        a = self.alpha.sample(n, rng) if isinstance(self.alpha, Distribution) else float(self.alpha)
+        b = self.beta.sample(n, rng) if isinstance(self.beta, Distribution) else float(self.beta)
+        a = np.clip(np.asarray(a), 1e-6, None)
+        b = np.clip(np.asarray(b), 1e-6, None)
+        return float(np.mean(a / (a + b)))
+    
+    def var(self, n: int = 200_000, *, rng: Optional[np.random.Generator] = None, seed: int = 0) -> float:
+        """
+        Get the variance of a distribution
+        Args:
+            n (int): Only applies when paramaters are distributions. Number of samples used in MC aproximation.
+            rng (np.random.Generator): Random generator to use when sampling.
+            seed (int): RNG seed.
+        Returns:
+            float: mean
+        """
+        if not isinstance(self.alpha, Distribution) and not isinstance(self.beta, Distribution):
+            a = float(self.alpha)
+            b = float(self.beta)
+            denom = (a + b) ** 2 * (a + b + 1.0)
+            return (a * b) / denom
+        
+        if rng is None:
+            rng = np.random.default_rng(seed)
+
+        a = self.alpha.sample(n, rng) if isinstance(self.alpha, Distribution) else float(self.alpha)
+        b = self.beta.sample(n, rng) if isinstance(self.beta, Distribution) else float(self.beta)
+        a = np.clip(np.asarray(a), 1e-6, None)
+        b = np.clip(np.asarray(b), 1e-6, None)
+
+        s = a + b
+        m = a / s
+        v = (a * b) / (s * s * (s + 1.0))
+
+        return float(np.mean(v) + np.var(m))
+    
+    def quantile(self, q: float, n: int = 50000, *, rng: Generator | None = None, method: str = "linear", seed: int = 0) -> float:
+        return super().quantile(q, n, rng=rng, method=method, seed=seed)
+
+
+
+
+
+
