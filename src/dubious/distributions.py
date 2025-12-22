@@ -120,7 +120,7 @@ class Normal(Distribution):
             sigma2 = s**2
         return sigma2 + mu_var
     
-    def quantile(self, q: float, n: int = 50000, *, rng: Optional[np.random.Generator] = None, method: str = "linear", seed: int = 0) -> float:
+    def quantile(self, q: float, n: int = 50000, *, method: str = "linear", rng: Optional[np.random.Generator] = None, seed: int = 0) -> float:
         return super().quantile(q, n, rng=rng, method=method, seed=seed)
 
 
@@ -164,7 +164,7 @@ class Uniform(Distribution):
         term2 = (low_v + high_v) / 4.0
         return term1 + term2
     
-    def quantile(self, q: float, n: int = 50000, *, rng: Optional[np.random.Generator] = None, method: str = "linear", seed: int = 0) -> float:
+    def quantile(self, q: float, n: int = 50000, *, method: str = "linear", rng: Optional[np.random.Generator] = None, seed: int = 0) -> float:
         return super().quantile(q, n, rng=rng, method=method, seed=seed)
 
 
@@ -240,7 +240,7 @@ class LogNormal(Distribution):
 
         return float(np.mean(Vy_cond) + np.var(Ey_cond, ddof=0))
     
-    def quantile(self, q: float, n: int = 50000, *, rng: Generator | None = None, method: str = "linear", seed: int = 0) -> float:
+    def quantile(self, q: float, n: int = 50000, *, method: str = "linear", rng: Generator | None = None, seed: int = 0) -> float:
         return super().quantile(q, n, rng=rng, method=method, seed=seed)
 
 
@@ -332,7 +332,7 @@ class Beta(Distribution):
 
         return float(np.mean(v) + np.var(m))
     
-    def quantile(self, q: float, n: int = 50000, *, rng: Generator | None = None, method: str = "linear", seed: int = 0) -> float:
+    def quantile(self, q: float, n: int = 50000, *, method: str = "linear", rng: Generator | None = None, seed: int = 0) -> float:
         return super().quantile(q, n, rng=rng, method=method, seed=seed)
 
 
