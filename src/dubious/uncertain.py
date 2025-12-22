@@ -91,9 +91,7 @@ class Uncertain(Sampleable):
         Returns:
             np.ndarray: Array of sampled points.
         """
-        if rng is None:
-            rng = np.random.default_rng(seed)
-        return sample_uncertain(self, n, rng=rng, seed = 0)
+        return sample_uncertain(self, n, rng=rng, seed = seed)
 
     def mean(self, n: int = 20_000, rng: Optional[np.random.Generator] = None, seed: int = 0) -> float:
         """
@@ -101,21 +99,17 @@ class Uncertain(Sampleable):
         Returns:
             float: mean
         """
-        if rng is None:
-            rng = np.random.default_rng()
         s = self.sample(n, rng, seed=seed)
         return float(np.mean(s))
     
-    def var(self, n: int = 20_000, rng: Optional[np.random.Generator] = None, seed: int = 0, ddof: int = 1):
+    def var(self, n: int = 20_000, rng: Optional[np.random.Generator] = None, seed: int = 0):
         """
         Get the variance of a distribution
         Returns:
             float: variance
         """
-        if rng is None:
-            rng = np.random.default_rng()
         s = self.sample(n, rng, seed=seed)
-        return float(np.var(s, ddof=ddof))
+        return float(np.var(s, ddof=0))
     
     def quantile(self, q: float, n: int = 50_000, rng: Optional[np.random.Generator] = None, seed: int = 0, method: str = "linear",) -> float:
         """
@@ -129,8 +123,6 @@ class Uncertain(Sampleable):
         """
         if not (0.0 <= q <= 1.0):
             raise ValueError("q must be between 0 and 1.")
-        if rng is None:
-            rng = np.random.default_rng()
         s = self.sample(n, rng, seed=seed)
 
         #cast to avoid numpy getting mad
@@ -293,7 +285,7 @@ def sample_uncertain(u: Uncertain,n: int, *, rng: Optional[np.random.Generator] 
         if node.op == Op.LEAF:
             if node.payload is None:
                 raise RuntimeError("LEAF node has no payload.")
-            result = node.payload.sample(n, rng=rng)
+            result = node.payload.sample(n, rng=rng, seed=seed)
 
         elif node.op == Op.CONST:
             result = np.full(n, node.payload)
@@ -316,7 +308,7 @@ def sample_uncertain(u: Uncertain,n: int, *, rng: Optional[np.random.Generator] 
             elif node.op == Op.LOG:
                 x = parents[0]
                 if np.any(x <= 0):
-                    warnings.warn("Warning: Sigma <= 0 found, clamped to 1e-6.")
+                    warnings.warn("Warning: Log domain <= 0 found, clamped to 1e-6.")
                     x = np.clip(x, a_min=1e-6, a_max=None)
 
                 if node.payload is None:

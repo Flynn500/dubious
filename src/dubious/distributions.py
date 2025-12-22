@@ -1,5 +1,4 @@
 import warnings
-from matplotlib.pylab import Generator
 import numpy as np
 from typing import Union, Optional, cast, Literal
 import numbers
@@ -9,7 +8,7 @@ from .sampleable import Sampleable
 
 class Distribution(Sampleable):
     @abstractmethod
-    def sample(self, n: int, *, rng: np.random.Generator) -> np.ndarray:
+    def sample(self, n: int, *, rng: Optional[np.random.Generator] = None, seed: int = 0) -> np.ndarray:
         """
         Sample points from a distribution
         Args:
@@ -37,9 +36,8 @@ class Distribution(Sampleable):
             float: variance
         """
         raise NotImplementedError
-    
-    @abstractmethod
-    def quantile(self, q: float, n: int = 50000, *, rng: Optional[np.random.Generator] = None, method: str = "linear", seed: int = 0) -> float:
+
+    def quantile(self, q: float, n: int = 50000, *, method: str = "linear", rng: Optional[np.random.Generator] = None, seed: int = 0) -> float:
         """
         Compute the q-th quantile of data.
         Args:
@@ -53,7 +51,7 @@ class Distribution(Sampleable):
             raise ValueError("q must be between 0 and 1.")
         if rng is None:
             rng = np.random.default_rng(seed)
-        s = self.sample(n, rng=rng)
+        s = self.sample(n, rng=rng, seed=seed)
 
         #cast to avoid numpy getting mad
         method_lit = cast(
@@ -240,7 +238,7 @@ class LogNormal(Distribution):
 
         return float(np.mean(Vy_cond) + np.var(Ey_cond, ddof=0))
     
-    def quantile(self, q: float, n: int = 50000, *, method: str = "linear", rng: Generator | None = None, seed: int = 0) -> float:
+    def quantile(self, q: float, n: int = 50000, *, method: str = "linear", rng: Optional[np.random.Generator] = None, seed: int = 0) -> float:
         return super().quantile(q, n, rng=rng, method=method, seed=seed)
 
 
@@ -330,9 +328,9 @@ class Beta(Distribution):
         m = a / s
         v = (a * b) / (s * s * (s + 1.0))
 
-        return float(np.mean(v) + np.var(m))
+        return float(np.mean(v) + np.var(m, ddof=0))
     
-    def quantile(self, q: float, n: int = 50000, *, method: str = "linear", rng: Generator | None = None, seed: int = 0) -> float:
+    def quantile(self, q: float, n: int = 50000, *, method: str = "linear", rng: Optional[np.random.Generator] = None, seed: int = 0) -> float:
         return super().quantile(q, n, rng=rng, method=method, seed=seed)
 
 
