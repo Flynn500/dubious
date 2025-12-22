@@ -1,14 +1,44 @@
 # Dubious
-<p>Dubious is a Python library for propagating uncertainty through numerical computations. Instead of collapsing uncertain values into single numbers early, Dubious lets you represent values as probability distributions, combine them with normal arithmetic operations, and only evaluate the resulting uncertainty when you explicitly ask for it.</p>
+Dubious is a Python library for propagating uncertainty through numerical computations. Instead of collapsing uncertain values into single numbers early, Dubious lets you represent values as probability distributions, combine them with normal arithmetic operations, and only evaluate the resulting uncertainty when you explicitly ask for it.
 
-<h3>Distribution Objects</h3>
-<p>Currently only supporting Normal, LogNormal, Beta and Uniform distributions. For each you can get mean, variance and samples. Distribution objects also support using other distribution objects for their parameters, although this may lead to unexpected behaviour in cases where parameters can become negative. </p>
+```python
+from dubious import Normal, Beta, Uncertain, Context
 
-<h3>Uncertainty Objects</h3>
-<p></p>Uncertainty objects are the wrapper for distributions that allow them to be used in as though they were numeric values. To create an uncertainty object you must first provide a distribution and a context object. Uncertain objects that belong to different contexts cannot be combined currently, this will change in the future. You can perform numeric operations on these uncertainty objects and sample from them via the sample_uncertain() function or .sample(). Mean variance and quantile functions are also available for these distributions.
-<br>
-<br>
-Some examples:</p>
+normal = Normal(5, 4)
+normal2 = Normal(10,2)
+
+x = Uncertain(normal) + Uncertain(normal2)
+
+print(f"variance: {x.var()} mean: {x.mean()} q(0.05): {x.quantile(0.05)}")
+```
+Rounded output: variance: 19.9 mean: 15 q(0.05): 7.7
+
+---
+A key idea behind Dubious is lazy uncertainty propagation. We don't calculate aproximations and lose information at each step, instead we build a graph of operations applied to uncertain values. You can construct complex expressions from uncertain inputs in a simple and readable manner, and evaluate the result using Monte Carlo simulations.
+
+Currently all distributions are assumed to be independent, support for dependent distributions is planned for the future. After applying any numerical operations to `Uncertain` objects, sampling and evaluation only occur when calling a function like `mean()`, `quantile()`, etc. is called. 
+
+If several instances of the same `Uncertain` object are involved in an operation these are assumed to represent the same variable so the samples used to calculate these values for each will be identical. 
+
+Numpy RNG objects do not need to be provided by default, but they can be optionally provided for any function that generates its result using MC sampling methods, you can alternatively just provide a seed.
+
+### Installation
+With python v3.9+ `pip install dubious`
+
+
+
+### Classes
+`Distibution()`:
+Currently supporting Normal, LogNormal, Beta and Uniform distributions. Distribution objects also support using other distribution objects for their parameters, although this may lead to unexpected behaviour in cases where parameters can become negative. For each you distribution can get `mean()`, `var()`, `quantile` and `sample()`.
+
+`Uncertainty()`:
+Uncertainty objects are the wrapper for distributions that allow them to be used like numeric values. Alongside being able to perform numeric operations on these uncertainty objects, they support the same properties as standard distributions (mean, variance, samping and quantile). You can apply the exact same operations on these objects you might apply to real data, and easily calculate the propagated uncertainty that comes from using several unreliable input values.
+
+`Context()`:
+Context objects own the graph through which we manage the uncertainty propagation. You can add uncertainty objects from different contexts, although this is slightly less performant than first creating a context object, and then creating all new uncertainty objects with ctx =  _Your context object_.
+
+---
+Some examples:
 
 ```python
 from dubious import Normal, Context, Uncertain
@@ -33,7 +63,7 @@ print("Variance:", area.var())
 print("Some samples:", area.sample(5))
 ```
 
-<p>We can also use distribution and uncertainty objects as parameters.</p>
+We can also use distribution and uncertainty objects as parameters.
 
 ```python
 from dubious import Normal, Beta, Uncertain, Context
