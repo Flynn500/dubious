@@ -1,20 +1,18 @@
 from dubious import Normal, Beta, Uncertain, Context
 
-ctx = Context()
-
 #We can define distribution parameters with other distributions.
 normal = Normal(10, 1)
 beta = Beta(3,normal)
+ctx1 = Context()
+ctx2 = Context()
 
-x = Uncertain(normal, ctx=ctx)
-y = Uncertain(beta, ctx=ctx)
+x = Uncertain(normal, ctx=ctx1)
+y = Uncertain(beta, ctx=ctx2)
 
 #Apply some arithmetic.
 x = x*y
 
-print(x.sample(5))
+print(f"{x.mean()} : {x.var()}")
 
-#We can also use uncertain distributions to define parameters.
-normal3 = Normal(y+2, 3)
-print(normal3.mean())
+
 

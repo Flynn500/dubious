@@ -8,6 +8,7 @@ from .distributions import Distribution
 from .sampleable import Sampleable
 Number = Union[int, float, np.number]
 
+
 class Uncertain(Sampleable):
     def __init__(self, dist: Optional[Distribution] = None, *, ctx: Optional[Context] = None,_node: Optional[Node] = None,):
         if ctx is None:
@@ -55,6 +56,21 @@ class Uncertain(Sampleable):
                 "Cannot combine Uncertain values from different contexts. "
                 "Create them with the same ctx=..."
             )
+
+    @staticmethod
+    def _align_contexts(a: "Uncertain", b: "Uncertain") -> tuple["Uncertain", "Uncertain"]:
+        if a.ctx is b.ctx:
+            return a, b
+
+        merged = Context()
+
+        a_new_id = merged.copy_subgraph_from(a.ctx, a.node_id)
+        b_new_id = merged.copy_subgraph_from(b.ctx, b.node_id)
+
+        return (
+            Uncertain(ctx=merged, _node=merged.get(a_new_id)),
+            Uncertain(ctx=merged, _node=merged.get(b_new_id)),
+        )
 
 
     #statistical methods
@@ -124,62 +140,94 @@ class Uncertain(Sampleable):
 
     #our arithmatic operations
     def __add__(self, other: Union["Uncertain", Number]) -> "Uncertain":
-        o = Uncertain._coerce(other, ctx=self.ctx)
-        Uncertain._ensure_same_ctx(self, o)
-        node = self.ctx.add_node(Op.ADD, parents=(self.node_id, o.node_id))
-        return Uncertain(ctx=self.ctx, _node=node)
+        if not isinstance(other, Uncertain):
+            o = Uncertain._coerce(other, ctx=self.ctx)
+            node = self.ctx.add_node(Op.ADD, parents=(self.node_id, o.node_id))
+            return Uncertain(ctx=self.ctx, _node=node)
+        
+        a, b = Uncertain._align_contexts(self, other)
+        node = a.ctx.add_node(Op.ADD, parents=(a.node_id, b.node_id))
+        return Uncertain(ctx=a.ctx, _node=node)
 
     def __radd__(self, other: Union["Uncertain", Number]) -> "Uncertain":
         return self.__add__(other)
 
     def __sub__(self, other: Union["Uncertain", Number]) -> "Uncertain":
-        o = Uncertain._coerce(other, ctx=self.ctx)
-        Uncertain._ensure_same_ctx(self, o)
-        node = self.ctx.add_node(Op.SUB, parents=(self.node_id, o.node_id))
-        return Uncertain(ctx=self.ctx, _node=node)
+        if not isinstance(other, Uncertain):
+            o = Uncertain._coerce(other, ctx=self.ctx)
+            node = self.ctx.add_node(Op.SUB, parents=(self.node_id, o.node_id))
+            return Uncertain(ctx=self.ctx, _node=node)
+        
+        a, b = Uncertain._align_contexts(self, other)
+        node = a.ctx.add_node(Op.SUB, parents=(a.node_id, b.node_id))
+        return Uncertain(ctx=a.ctx, _node=node)
 
     def __rsub__(self, other: Union["Uncertain", Number]) -> "Uncertain":
-        o = Uncertain._coerce(other, ctx=self.ctx)
-        Uncertain._ensure_same_ctx(o, self)
-        node = self.ctx.add_node(Op.SUB, parents=(o.node_id, self.node_id))
-        return Uncertain(ctx=self.ctx, _node=node)
+        if not isinstance(other, Uncertain):
+            o = Uncertain._coerce(other, ctx=self.ctx)
+            node = self.ctx.add_node(Op.SUB, parents=(o.node_id, self.node_id))
+            return Uncertain(ctx=self.ctx, _node=node)
+
+        a, b = Uncertain._align_contexts(other, self)
+        node = a.ctx.add_node(Op.SUB, parents=(a.node_id, b.node_id))
+        return Uncertain(ctx=a.ctx, _node=node)
 
     def __mul__(self, other: Union["Uncertain", Number]) -> "Uncertain":
-        o = Uncertain._coerce(other, ctx=self.ctx)
-        Uncertain._ensure_same_ctx(self, o)
-        node = self.ctx.add_node(Op.MUL, parents=(self.node_id, o.node_id))
-        return Uncertain(ctx=self.ctx, _node=node)
+        if not isinstance(other, Uncertain):
+            o = Uncertain._coerce(other, ctx=self.ctx)
+            node = self.ctx.add_node(Op.MUL, parents=(self.node_id, o.node_id))
+            return Uncertain(ctx=self.ctx, _node=node)
+        
+        a, b = Uncertain._align_contexts(self, other)
+        node = a.ctx.add_node(Op.MUL, parents=(a.node_id, b.node_id))
+        return Uncertain(ctx=a.ctx, _node=node)
     
     def __rmul__(self, other: Union["Uncertain", Number]) -> "Uncertain":
         return self.__mul__(other)
 
     def __truediv__(self, other: Union["Uncertain", Number]) -> "Uncertain":
-        o = Uncertain._coerce(other, ctx=self.ctx)
-        Uncertain._ensure_same_ctx(self, o)
-        node = self.ctx.add_node(Op.DIV, parents=(self.node_id, o.node_id))
-        return Uncertain(ctx=self.ctx, _node=node)
+        if not isinstance(other, Uncertain):
+            o = Uncertain._coerce(other, ctx=self.ctx)
+            node = self.ctx.add_node(Op.DIV, parents=(self.node_id, o.node_id))
+            return Uncertain(ctx=self.ctx, _node=node)
+        
+        a, b = Uncertain._align_contexts(self, other)
+        node = a.ctx.add_node(Op.DIV, parents=(a.node_id, b.node_id))
+        return Uncertain(ctx=a.ctx, _node=node)
     
     def __rtruediv__(self, other: Union["Uncertain", Number]) -> "Uncertain":
-        o = Uncertain._coerce(other, ctx=self.ctx)
-        Uncertain._ensure_same_ctx(o, self)
-        node = self.ctx.add_node(Op.DIV, parents=(o.node_id, self.node_id))
-        return Uncertain(ctx=self.ctx, _node=node)
+        if not isinstance(other, Uncertain):
+            o = Uncertain._coerce(other, ctx=self.ctx)
+            node = self.ctx.add_node(Op.DIV, parents=(o.node_id, self.node_id))
+            return Uncertain(ctx=self.ctx, _node=node)
 
+        a, b = Uncertain._align_contexts(other, self)
+        node = a.ctx.add_node(Op.DIV, parents=(a.node_id, b.node_id))
+        return Uncertain(ctx=a.ctx, _node=node)
+    
     def __neg__(self) -> "Uncertain":
         node = self.ctx.add_node(Op.NEG, parents=(self.node_id,))
         return Uncertain(ctx=self.ctx, _node=node)
 
     def __pow__(self, power: Union["Uncertain", Number]) -> "Uncertain":
-        p = Uncertain._coerce(power, ctx=self.ctx)
-        Uncertain._ensure_same_ctx(self, p)
-        node = self.ctx.add_node(Op.POW, parents=(self.node_id, p.node_id))
-        return Uncertain(ctx=self.ctx, _node=node)
-    
-    def __rpow__(self, other: Union["Uncertain", Number]) -> "Uncertain":
-        o = Uncertain._coerce(other, ctx=self.ctx)
-        Uncertain._ensure_same_ctx(o, self)
-        node = self.ctx.add_node(Op.POW, parents=(o.node_id, self.node_id))
-        return Uncertain(ctx=self.ctx, _node=node)
+        if not isinstance(power, Uncertain):
+            p = Uncertain._coerce(power, ctx=self.ctx)
+            node = self.ctx.add_node(Op.POW, parents=(self.node_id, p.node_id))
+            return Uncertain(ctx=self.ctx, _node=node)
+        
+        a, b = Uncertain._align_contexts(self, power)
+        node = a.ctx.add_node(Op.POW, parents=(a.node_id, b.node_id))
+        return Uncertain(ctx=a.ctx, _node=node)
+
+    def __rpow__(self, power: Union["Uncertain", Number]) -> "Uncertain":
+        if not isinstance(power, Uncertain):
+            o = Uncertain._coerce(power, ctx=self.ctx)
+            node = self.ctx.add_node(Op.POW, parents=(o.node_id, self.node_id))
+            return Uncertain(ctx=self.ctx, _node=node)
+        
+        a, b = Uncertain._align_contexts(power, self)
+        node = a.ctx.add_node(Op.POW, parents=(a.node_id, b.node_id))
+        return Uncertain(ctx=a.ctx, _node=node)
 
     
 

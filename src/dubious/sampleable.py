@@ -36,3 +36,4 @@ class Sampleable():
     @abstractmethod
     def quantile(self, q: float, n: int = 50000, *, rng: Optional[np.random.Generator] = None, method: str = "linear", seed: int = 0) -> float:
         raise NotImplementedError
+    

@@ -1,6 +1,6 @@
 from __future__ import annotations
 import itertools
-from typing import Dict
+from typing import Dict, Optional
 from .node import Node, Op
 
 class Context:
@@ -19,3 +19,17 @@ class Context:
     @property
     def nodes(self) -> Dict[int, Node]:
         return self._nodes
+
+    def copy_subgraph_from(self, src: "Context", root_id: int, *, memo: Optional[Dict[int, int]] = None,) -> int:
+        if memo is None:
+            memo = {}
+
+        if root_id in memo:
+            return memo[root_id]
+
+        src_node = src.get(root_id)
+        new_parents = tuple(self.copy_subgraph_from(src, pid, memo=memo) for pid in src_node.parents)
+        new_node = self.add_node(src_node.op, parents=new_parents, payload=src_node.payload)
+
+        memo[root_id] = new_node.id
+        return new_node.id

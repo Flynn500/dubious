@@ -169,7 +169,7 @@ class Uniform(Distribution):
 
 
 class LogNormal(Distribution):
-    def __init__(self, mu: Union[float, Distribution] =0.0, sigma: Union[float, Distribution] =1.0):
+    def __init__(self, mu: Union[float, Sampleable] =0.0, sigma: Union[float, Sampleable] =1.0):
         if isinstance(sigma, numbers.Real) and sigma <= 0:
             raise ValueError("sigma must be positive.")
         self.mu = mu
@@ -179,8 +179,8 @@ class LogNormal(Distribution):
         if rng is None:
             rng = np.random.default_rng(seed)
 
-        mu = self.mu.sample(n, rng=rng) if isinstance(self.mu, Distribution) else self.mu
-        sigma = self.sigma.sample(n, rng=rng) if isinstance(self.sigma, Distribution) else self.sigma
+        mu = self.mu.sample(n, rng=rng) if isinstance(self.mu, Sampleable) else self.mu
+        sigma = self.sigma.sample(n, rng=rng) if isinstance(self.sigma, Sampleable) else self.sigma
 
         if np.any(np.asarray(sigma) <= 0):
             warnings.warn("Warning: Sigma <= 0 found, clamped to 1e-6.")
@@ -198,7 +198,7 @@ class LogNormal(Distribution):
         Returns:
             float: mean
         """
-        if not isinstance(self.mu, Distribution) and not isinstance(self.sigma, Distribution):
+        if not isinstance(self.mu, Sampleable) and not isinstance(self.sigma, Sampleable):
             mu = float(self.mu)
             sigma = float(self.sigma)
             return float(np.exp(mu + 0.5 * sigma**2))
@@ -206,8 +206,8 @@ class LogNormal(Distribution):
         if rng is None:
             rng = np.random.default_rng(seed)
 
-        mu_s = self.mu.sample(n, rng=rng) if isinstance(self.mu, Distribution) else np.full(n, self.mu)
-        sg_s = self.sigma.sample(n, rng=rng) if isinstance(self.sigma, Distribution) else np.full(n, self.sigma)
+        mu_s = self.mu.sample(n, rng=rng) if isinstance(self.mu, Sampleable) else np.full(n, self.mu)
+        sg_s = self.sigma.sample(n, rng=rng) if isinstance(self.sigma, Sampleable) else np.full(n, self.sigma)
 
         sg_s = np.clip(sg_s, 1e-6, None)
         return float(np.mean(np.exp(mu_s + 0.5 * sg_s**2)))
@@ -222,7 +222,7 @@ class LogNormal(Distribution):
         Returns:
             float: mean
         """
-        if not isinstance(self.mu, Distribution) and not isinstance(self.sigma, Distribution):
+        if not isinstance(self.mu, Sampleable) and not isinstance(self.sigma, Sampleable):
             mu = float(self.mu)
             sigma = float(self.sigma)
             return float((np.exp(sigma**2) - 1.0) * np.exp(2.0 * mu + sigma**2))
@@ -230,8 +230,8 @@ class LogNormal(Distribution):
         if rng is None:
             rng = np.random.default_rng(seed)
 
-        mu_s = self.mu.sample(n, rng=rng) if isinstance(self.mu, Distribution) else np.full(n, self.mu)
-        sg_s = self.sigma.sample(n, rng=rng) if isinstance(self.sigma, Distribution) else np.full(n, self.sigma)
+        mu_s = self.mu.sample(n, rng=rng) if isinstance(self.mu, Sampleable) else np.full(n, self.mu)
+        sg_s = self.sigma.sample(n, rng=rng) if isinstance(self.sigma, Sampleable) else np.full(n, self.sigma)
 
         sg_s = np.clip(sg_s, 1e-6, None)
 
@@ -245,7 +245,7 @@ class LogNormal(Distribution):
 
 
 class Beta(Distribution):
-    def __init__(self, alpha: Union[float, Distribution] = 1.0, beta: Union[float, Distribution] = 1.0):
+    def __init__(self, alpha: Union[float, Sampleable] = 1.0, beta: Union[float, Sampleable] = 1.0):
         if isinstance(alpha, numbers.Real) and alpha <= 0:
             raise ValueError("alpha must be positive.")
         if isinstance(beta, numbers.Real) and beta <= 0:
@@ -257,12 +257,12 @@ class Beta(Distribution):
         if rng is None:
             rng = np.random.default_rng(seed)
 
-        if isinstance(self.alpha, Distribution):
+        if isinstance(self.alpha, Sampleable):
             a = self.alpha.sample(n, rng=rng)
         else:
             a = self.alpha
 
-        if isinstance(self.beta, Distribution):
+        if isinstance(self.beta, Sampleable):
             b = self.beta.sample(n, rng=rng)
         else:
             b = self.beta
@@ -288,7 +288,7 @@ class Beta(Distribution):
         Returns:
             float: mean
         """
-        if not isinstance(self.alpha, Distribution) and not isinstance(self.beta, Distribution):
+        if not isinstance(self.alpha, Sampleable) and not isinstance(self.beta, Sampleable):
             a = float(self.alpha)
             b = float(self.beta)
             return a / (a + b)
@@ -296,8 +296,8 @@ class Beta(Distribution):
         if rng is None:
             rng = np.random.default_rng(seed)
         
-        a = self.alpha.sample(n, rng=rng) if isinstance(self.alpha, Distribution) else float(self.alpha)
-        b = self.beta.sample(n, rng=rng) if isinstance(self.beta, Distribution) else float(self.beta)
+        a = self.alpha.sample(n, rng=rng) if isinstance(self.alpha, Sampleable) else float(self.alpha)
+        b = self.beta.sample(n, rng=rng) if isinstance(self.beta, Sampleable) else float(self.beta)
         a = np.clip(np.asarray(a), 1e-6, None)
         b = np.clip(np.asarray(b), 1e-6, None)
         return float(np.mean(a / (a + b)))
@@ -312,7 +312,7 @@ class Beta(Distribution):
         Returns:
             float: mean
         """
-        if not isinstance(self.alpha, Distribution) and not isinstance(self.beta, Distribution):
+        if not isinstance(self.alpha, Sampleable) and not isinstance(self.beta, Sampleable):
             a = float(self.alpha)
             b = float(self.beta)
             denom = (a + b) ** 2 * (a + b + 1.0)
@@ -321,8 +321,8 @@ class Beta(Distribution):
         if rng is None:
             rng = np.random.default_rng(seed)
 
-        a = self.alpha.sample(n, rng=rng) if isinstance(self.alpha, Distribution) else float(self.alpha)
-        b = self.beta.sample(n, rng=rng) if isinstance(self.beta, Distribution) else float(self.beta)
+        a = self.alpha.sample(n, rng=rng) if isinstance(self.alpha, Sampleable) else float(self.alpha)
+        b = self.beta.sample(n, rng=rng) if isinstance(self.beta, Sampleable) else float(self.beta)
         a = np.clip(np.asarray(a), 1e-6, None)
         b = np.clip(np.asarray(b), 1e-6, None)
 

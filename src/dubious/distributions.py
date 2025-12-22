@@ -85,7 +85,7 @@ class Normal(Distribution):
         self.mu = mu
         self.sigma = sigma
 
-    def sample(self, n: int, *, rng: np.random.Generator, seed: int = 0) -> np.ndarray:
+    def sample(self, n: int, *, rng: Optional[np.random.Generator] = None, seed: int = 0) -> np.ndarray:
         if rng is None:
             rng = np.random.default_rng(seed)
 
@@ -120,7 +120,7 @@ class Normal(Distribution):
             sigma2 = s**2
         return sigma2 + mu_var
     
-    def quantile(self, q: float, n: int = 50000, *, rng: Generator | None = None, method: str = "linear", seed: int = 0) -> float:
+    def quantile(self, q: float, n: int = 50000, *, rng: Optional[np.random.Generator] = None, method: str = "linear", seed: int = 0) -> float:
         return super().quantile(q, n, rng=rng, method=method, seed=seed)
 
 
@@ -132,7 +132,7 @@ class Uniform(Distribution):
         self.low = low
         self.high = high
 
-    def sample(self, n: int, *, rng: Optional[np.random.Generator], seed: int = 0) -> np.ndarray:
+    def sample(self, n: int, *, rng: Optional[np.random.Generator] = None, seed: int = 0) -> np.ndarray:
         if rng is None:
             rng = np.random.default_rng(seed)
         
@@ -164,7 +164,7 @@ class Uniform(Distribution):
         term2 = (low_v + high_v) / 4.0
         return term1 + term2
     
-    def quantile(self, q: float, n: int = 50000, *, rng: Generator | None = None, method: str = "linear", seed: int = 0) -> float:
+    def quantile(self, q: float, n: int = 50000, *, rng: Optional[np.random.Generator] = None, method: str = "linear", seed: int = 0) -> float:
         return super().quantile(q, n, rng=rng, method=method, seed=seed)
 
 
