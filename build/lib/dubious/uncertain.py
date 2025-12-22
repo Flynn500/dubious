@@ -82,7 +82,7 @@ class Uncertain(Sampleable):
 
 
     #statistical methods
-    def sample(self, n: int, rng: Optional[np.random.Generator] = None) -> np.ndarray:
+    def sample(self, n: int, rng: Optional[np.random.Generator] = None, seed: int = 0) -> np.ndarray:
         """
         Sample points from a distribution
         Args:
@@ -92,8 +92,8 @@ class Uncertain(Sampleable):
             np.ndarray: Array of sampled points.
         """
         if rng is None:
-            rng = np.random.default_rng()
-        return sample_uncertain(self, n, rng=rng)
+            rng = np.random.default_rng(seed)
+        return sample_uncertain(self, n, rng=rng, seed = 0)
 
     def mean(self, n: int = 20_000, rng: Optional[np.random.Generator] = None) -> float:
         """
@@ -106,7 +106,7 @@ class Uncertain(Sampleable):
         s = self.sample(n, rng)
         return float(np.mean(s))
     
-    def var(self, n: int = 20_000, rng: Optional[np.random.Generator] = None, ddof: int = 1):
+    def var(self, n: int = 20_000, rng: Optional[np.random.Generator] = None, seed: int = 0, ddof: int = 1):
         """
         Get the variance of a distribution
         Returns:
@@ -117,7 +117,7 @@ class Uncertain(Sampleable):
         s = self.sample(n, rng)
         return float(np.var(s, ddof=ddof))
     
-    def quantile(self, q: float, n: int = 50_000, rng: Optional[np.random.Generator] = None, method: str = "linear",) -> float:
+    def quantile(self, q: float, n: int = 50_000, rng: Optional[np.random.Generator] = None, seed: int = 0, method: str = "linear",) -> float:
         """
         Compute the q-th quantile of data.
         Args:

@@ -13,4 +13,4 @@ src/dubious.egg-info/SOURCES.txt
 src/dubious.egg-info/dependency_links.txt
 src/dubious.egg-info/requires.txt
 src/dubious.egg-info/top_level.txt
-tests/test.py
+tests/test_.py
