@@ -6,6 +6,7 @@ src/dubious/context.py
 src/dubious/distributions.py
 src/dubious/node.py
 src/dubious/sampleable.py
+src/dubious/umath.py
 src/dubious/uncertain.py
 src/dubious.egg-info/PKG-INFO
 src/dubious.egg-info/SOURCES.txt

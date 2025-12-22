@@ -1,8 +1,9 @@
 from __future__ import annotations
 import numpy as np
-from typing import Any, Optional, Tuple, Union, Literal, cast
-from .node import Node, Op
+from typing import Any, Optional, Union, Literal, cast
+import warnings
 
+from .node import Node, Op
 from .context import Context
 from .distributions import Distribution
 from .sampleable import Sampleable
@@ -10,6 +11,9 @@ Number = Union[int, float, np.number]
 
 
 class Uncertain(Sampleable):
+    """
+    A wrapper for distribution objects that allow them to be used as though they were numeric values from said distribution.
+    """
     def __init__(self, dist: Optional[Distribution] = None, *, ctx: Optional[Context] = None,_node: Optional[Node] = None,):
         if ctx is None:
             self._ctx = Context()
@@ -51,6 +55,10 @@ class Uncertain(Sampleable):
     
     @staticmethod
     def _ensure_same_ctx(a: "Uncertain", b: "Uncertain"):
+        """
+        Legacy function, context merging is possible so uneeded, keeping because merging can be expensive.
+        May provide some way to force the same context to be used in cases where performance is an issue.
+        """
         if a.ctx is not b.ctx:
             raise ValueError(
                 "Cannot combine Uncertain values from different contexts. "
@@ -219,16 +227,45 @@ class Uncertain(Sampleable):
         node = a.ctx.add_node(Op.POW, parents=(a.node_id, b.node_id))
         return Uncertain(ctx=a.ctx, _node=node)
 
-    def __rpow__(self, power: Union["Uncertain", Number]) -> "Uncertain":
-        if not isinstance(power, Uncertain):
-            o = Uncertain._coerce(power, ctx=self.ctx)
+    def __rpow__(self, other: Union["Uncertain", Number]) -> "Uncertain":
+        if not isinstance(other, Uncertain):
+            o = Uncertain._coerce(other, ctx=self.ctx)
             node = self.ctx.add_node(Op.POW, parents=(o.node_id, self.node_id))
             return Uncertain(ctx=self.ctx, _node=node)
         
-        a, b = Uncertain._align_contexts(power, self)
+        a, b = Uncertain._align_contexts(other, self)
         node = a.ctx.add_node(Op.POW, parents=(a.node_id, b.node_id))
         return Uncertain(ctx=a.ctx, _node=node)
+    
+    #custom numerical operations
+    def log(self, base: float | None = None) -> "Uncertain":
+        payload = None if base is None else float(base)
+        node = self.ctx.add_node(Op.LOG, parents=(self.node_id,), payload=payload)
+        return Uncertain(ctx=self.ctx, _node=node)
+    
+    def sin(self) -> "Uncertain":
+        node = self.ctx.add_node(Op.SIN, parents=(self.node_id,))
+        return Uncertain(ctx=self.ctx, _node=node)
 
+    def cos(self) -> "Uncertain":
+        node = self.ctx.add_node(Op.COS, parents=(self.node_id,))
+        return Uncertain(ctx=self.ctx, _node=node)
+
+    def tan(self) -> "Uncertain":
+        node = self.ctx.add_node(Op.TAN, parents=(self.node_id,))
+        return Uncertain(ctx=self.ctx, _node=node)
+    
+    def asin(self) -> "Uncertain":
+        node = self.ctx.add_node(Op.ASIN, parents=(self.node_id,))
+        return Uncertain(ctx=self.ctx, _node=node)
+    
+    def acos(self) -> "Uncertain":
+        node = self.ctx.add_node(Op.ACOS, parents=(self.node_id,))
+        return Uncertain(ctx=self.ctx, _node=node)
+
+    def atan(self) -> "Uncertain":
+        node = self.ctx.add_node(Op.ATAN, parents=(self.node_id,))
+        return Uncertain(ctx=self.ctx, _node=node)
     
 
 def sample_uncertain(u: Uncertain,n: int, *, rng: Optional[np.random.Generator] = None, seed: int = 0) -> np.ndarray:
@@ -276,6 +313,31 @@ def sample_uncertain(u: Uncertain,n: int, *, rng: Optional[np.random.Generator] 
                 result = -parents[0]
             elif node.op == Op.POW:
                 result = parents[0] ** parents[1]
+            elif node.op == Op.LOG:
+                x = parents[0]
+                if np.any(x <= 0):
+                    warnings.warn("Warning: Sigma <= 0 found, clamped to 1e-6.")
+                    x = np.clip(x, a_min=1e-6, a_max=None)
+
+                if node.payload is None:
+                    result = np.log(x)
+                else:
+                    base = float(node.payload)
+                    if base <= 0 or base == 1.0:
+                        raise ValueError("log() base must be > 0 and != 1.")
+                    result = np.log(x) / np.log(base)
+            elif node.op == Op.SIN:
+                result = np.sin(parents[0])
+            elif node.op == Op.COS:
+                result = np.cos(parents[0])
+            elif node.op == Op.TAN:
+                result = np.tan(parents[0])
+            elif node.op == Op.ASIN:
+                result = np.arcsin(parents[0])
+            elif node.op == Op.ACOS:
+                result = np.arccos(parents[0])
+            elif node.op == Op.ATAN:
+                result = np.arctan(parents[0])
             else:
                 raise ValueError(f"Unsupported op {node.op}")
 

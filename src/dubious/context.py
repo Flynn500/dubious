@@ -4,6 +4,11 @@ from typing import Dict, Optional
 from .node import Node, Op
 
 class Context:
+    """
+    Context objects own the graph that stores the operations applied to uncertain distributions.
+    Creating a context is not required to add Uncertain objects together, but it is preffered as 
+    merging seperate contexts can be expensive.
+    """
     def __init__(self):
         self._ids = itertools.count(1)
         self._nodes: Dict[int, Node] = {}

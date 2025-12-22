@@ -13,6 +13,12 @@ class Op(Enum):
     NEG = auto()
     POW = auto()
     LOG = auto()
+    SIN = auto()
+    COS = auto()
+    TAN = auto()
+    ASIN = auto()
+    ACOS = auto()
+    ATAN = auto()
 
 @dataclass(frozen=True)
 class Node:
