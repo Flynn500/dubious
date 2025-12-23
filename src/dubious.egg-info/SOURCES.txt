@@ -2,6 +2,7 @@ CHANGELOG.md
 LICENSE
 README.md
 pyproject.toml
+src/dubious/SampleSession.py
 src/dubious/__init__.py
 src/dubious/context.py
 src/dubious/distributions.py
