@@ -9,7 +9,7 @@ from .sampleable import Sampleable
 
 class Distribution(Sampleable):
     @abstractmethod
-    def sample(self, n: int, *, rng: np.random.Generator) -> np.ndarray:
+    def sample(self, n: int, *, rng: np.random.Generator, seed: int = 0) -> np.ndarray:
         """
         Sample points from a distribution
         Args:

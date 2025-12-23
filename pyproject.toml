@@ -15,15 +15,16 @@ license = {file = "LICENSE"}
 dependencies = [
   "numpy>=1.23",
 ]
+dynamic = ["readme"]
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md", "CHANGELOG.md"], content-type = "text/markdown"}
 
 [tool.setuptools]
 package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
-[tool.setuptools.dynamic]
-readme = {file = ["README.md", "CHANGELOG.md"]}
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
