@@ -4,7 +4,7 @@
 - Uncertain objects and Distributions now inherit from Sampleable and can both be used as input parameters
 - Added log, sin, cos, tan, asin, acos and atan operations for Uncertain objects in umath. Umath functions also support normal numbers.
 ### Fixed
-- Some functions had inconsistent requirments regarding numpy generators. Now all do not require one but give the option of either providing one or a seed.
+- Some functions had inconsistent requirements regarding numpy generators. Now all do not require one but give the option of either providing one or a seed.
 ## 0.1.1
 ### Fixed
 - 0.1 release had a major bug making most uncertain methods unusable on other machines... oops
