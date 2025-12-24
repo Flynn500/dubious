@@ -12,6 +12,11 @@ class Context:
     def __init__(self):
         self._ids = itertools.count(1)
         self._nodes: Dict[int, Node] = {}
+        self._corr: Dict[tuple[int, int], float] = {}
+    
+    @property
+    def nodes(self) -> Dict[int, Node]:
+        return self._nodes
 
     def add_node(self, op: Op, parents: tuple[int, ...] = (), payload=None) -> Node:
         node = Node(id=next(self._ids), op=op, parents=parents, payload=payload)
@@ -20,10 +25,6 @@ class Context:
 
     def get(self, node_id: int) -> Node:
         return self._nodes[node_id]
-
-    @property
-    def nodes(self) -> Dict[int, Node]:
-        return self._nodes
 
     def copy_subgraph_from(self, src: "Context", root_id: int, *, memo: Optional[Dict[int, int]] = None,) -> int:
         if memo is None:
@@ -38,3 +39,13 @@ class Context:
 
         memo[root_id] = new_node.id
         return new_node.id
+
+    def set_corr(self, a_id: int, b_id: int, rho: float) -> None:
+        if not (-1.0 <= rho <= 1.0):
+            raise ValueError("rho must be in [-1, 1].")
+        if a_id == b_id:
+            raise ValueError("Cannot correlate a leaf with itself.")
+        if self.get(a_id).op != Op.LEAF or self.get(b_id).op != Op.LEAF:
+            raise ValueError("set_leaf_corr currently supports Op.LEAF nodes only.")
+        key = (a_id, b_id) if a_id < b_id else (b_id, a_id)
+        self._corr[key] = float(rho)

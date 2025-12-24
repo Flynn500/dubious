@@ -142,6 +142,22 @@ class Uncertain(Sampleable):
             method,
         )
         return float(np.quantile(s, q, method=method_lit))
+    
+    def cdf(self, x: float, n: int = 200_000, *, rng=None, seed: int = 0) -> float:
+        """
+        Compute an approximation of the cumulative density function. 
+        Args:
+            x (float): Value.
+            n (int): Number of samples.
+            rng (np.random.Generator): Numpy random generator.
+        Returns:
+            float: quantile
+        """
+        if rng is None:
+            rng = np.random.default_rng(seed)
+        
+        s = self.sample(n, rng=rng)
+        return float(np.mean(s <= x))
 
 
     #our arithmatic operations

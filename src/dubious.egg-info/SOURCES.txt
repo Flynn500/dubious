@@ -5,6 +5,7 @@ pyproject.toml
 src/dubious/SampleSession.py
 src/dubious/__init__.py
 src/dubious/context.py
+src/dubious/correlation.py
 src/dubious/distributions.py
 src/dubious/node.py
 src/dubious/sampleable.py

@@ -3,6 +3,7 @@ import numpy as np
 from typing import Union, Optional, cast, Literal
 import numbers
 from abc import abstractmethod
+from scipy.stats import norm
 
 from .sampleable import Sampleable
 
@@ -39,7 +40,7 @@ class Distribution(Sampleable):
 
     def quantile(self, q: float, n: int = 50000, *, method: str = "linear", rng: Optional[np.random.Generator] = None, seed: int = 0) -> float:
         """
-        Compute the q-th quantile of data.
+        Compute an approximation of the q-th quantile of data. 
         Args:
             q (float): Probabilty of quantiles to compute.
             n (int): Number of samples.
@@ -65,7 +66,23 @@ class Distribution(Sampleable):
         )
         return float(np.quantile(s, q, method=method_lit))
     
+    def cdf(self, x: float, n: int = 200_000, *, rng=None, seed: int = 0) -> float:
+        """
+        Compute an approximation of the cumulative density function. 
+        Args:
+            x (float): Value.
+            n (int): Number of samples.
+            rng (np.random.Generator): Numpy random generator.
+        Returns:
+            float: quantile
+        """
+        if rng is None:
+            rng = np.random.default_rng(seed)
+        
+        s = self.sample(n, rng=rng)
+        return float(np.mean(s <= x))
     
+
 
 def _mean(x: Union[float, Sampleable]) -> float:
     return x.mean() if isinstance(x, Sampleable) else float(x)
