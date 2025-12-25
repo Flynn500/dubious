@@ -164,6 +164,22 @@ class Uncertain(Sampleable):
         
         s = self.sample(n, rng=rng)
         return float(np.mean(s <= x))
+    
+    #correlation
+    def corr(self, u: "Uncertain", rho: float):
+        """
+        Correlate this Uncertain object with another using Gaussian Copular. 
+        Both objects must be a leaf nodes, meaning they have not yet had any numerical 
+        operations applied to them. 
+        Args:
+            u (Uncertain): The object with which to correlate.
+            rho (int): Gaussian copula correlation parameter.
+        Returns:
+            None
+        """
+        Uncertain._align_contexts(self, u)
+        self._ctx.set_corr(self.node_id, u.node_id, rho)
+
 
 
     #our arithmatic operations

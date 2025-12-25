@@ -1,6 +1,6 @@
 from __future__ import annotations
 import itertools
-from typing import Dict, Optional, TYPE_CHECKING, Union
+from typing import Dict, Optional, TYPE_CHECKING, Union, Any
 from .node import Node, Op
 
 if TYPE_CHECKING:
@@ -43,27 +43,21 @@ class Context:
         memo[root_id] = new_node.id
         return new_node.id
 
-    def set_corr(self, a: Union[int, Uncertain], b: Union[int, Uncertain], rho: float):
+    def set_corr(self, a: Union[int, Any], b: Union[int, Any], rho: float):
         """
         Sets correlation between to uncertain leaf nodes using gaussian copular.
         """
-        from .uncertain import Uncertain
-        if isinstance(a, Uncertain):
-            a = a.node_id
-        if isinstance(b, Uncertain):
-            b = b.node_id
+        a = getattr(a, "node_id", a)
+        b = getattr(b, "node_id", b)
 
         if a == b:
             return
         key = (a, b) if a < b else (b, a)
         self._corr[key] = float(rho)
 
-    def get_corr(self, a: Union[int, Uncertain], b: Union[int, Uncertain]) -> float:
-        from .uncertain import Uncertain
-        if isinstance(a, Uncertain):
-            a = a.node_id
-        if isinstance(b, Uncertain):
-            b = b.node_id
+    def get_corr(self, a: Union[int, Any], b: Union[int, Any]) -> float:
+        a = getattr(a, "node_id", a)
+        b = getattr(b, "node_id", b)
         
         if a == b:
             return 1.0

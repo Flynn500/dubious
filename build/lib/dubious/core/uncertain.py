@@ -164,6 +164,12 @@ class Uncertain(Sampleable):
         
         s = self.sample(n, rng=rng)
         return float(np.mean(s <= x))
+    
+    #correlation
+    def corr(self, u: "Uncertain", rho: float):
+        Uncertain._align_contexts(self, u)
+        self._ctx.set_corr(self.node_id, u.node_id, rho)
+
 
 
     #our arithmatic operations
