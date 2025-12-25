@@ -1,13 +1,14 @@
 from __future__ import annotations
 import numpy as np
-from typing import Any, Optional, Union, Literal, cast
+from typing import Any, Optional, Union, Literal, cast, TYPE_CHECKING
 import warnings
 
 from .node import Node, Op
 from .context import Context
-from ..distributions.distributions import Distribution
-from .sampleable import Sampleable
-from .sample_session import SampleSession
+from .sampleable import Sampleable, Distribution
+if TYPE_CHECKING:
+    from .sample_session import SampleSession
+
 Number = Union[int, float, np.number]
 
 
@@ -94,9 +95,9 @@ class Uncertain(Sampleable):
         """
         if rng is None:
             rng = np.random.default_rng(seed)
-    
+        
+        from .sample_session import SampleSession #hacky avoiding
         session = SampleSession(n, rng)
-
         return sample_uncertain(self, session)
 
     def mean(self, n: int = 20_000, rng: Optional[np.random.Generator] = None, seed: int = 0) -> float:

@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from typing import Dict, Any, Callable, Optional, List, Tuple, Set
 
 from.context import Context
-from ...math.ustats import erf
+from ..umath.ustats import erf
 @dataclass
 class SampleSession:
     n: int

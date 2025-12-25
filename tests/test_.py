@@ -2,7 +2,9 @@ import math
 import numpy as np
 import pytest
 
-from dubious import Normal, Uniform, Beta, Uncertain, Context, sin, sample_uncertain
+from dubious.distributions import Normal
+from dubious.core import Uncertain, Context
+from dubious.umath import sin
 
 def test_normal_moments():
     d = Normal(5, 4)  # if your Normal is (mean, std)
