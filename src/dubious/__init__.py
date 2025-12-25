@@ -1,7 +1,7 @@
-from .distributions import Normal, Distribution, LogNormal, Uniform, Beta
-from .uncertain import Uncertain, sample_uncertain
-from .uncertain import Context
-from .umath import log, sin, cos, tan, asin, acos, atan
+from .distributions.distributions import Normal, Distribution, LogNormal, Uniform, Beta
+from .core.uncertain import Uncertain, sample_uncertain
+from .core.uncertain import Context
+from ..math.umath import log, sin, cos, tan, asin, acos, atan
 
 __version__ = "0.2.0"
 

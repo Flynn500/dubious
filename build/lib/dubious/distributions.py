@@ -38,7 +38,7 @@ class Distribution(Sampleable):
         """
         raise NotImplementedError
 
-    def quantile(self, q: float, n: int = 50000, *, method: str = "linear", rng: Optional[np.random.Generator] = None, seed: int = 0) -> float:
+    def quantile(self, q: Union[float, np.ndarray], n: int = 50000, *, method: str = "linear", rng: Optional[np.random.Generator] = None, seed: int = 0) -> Union[float, np.ndarray]:
         """
         Compute an approximation of the q-th quantile of data. 
         Args:
@@ -48,8 +48,11 @@ class Distribution(Sampleable):
         Returns:
             float: quantile
         """
-        if not (0.0 <= q <= 1.0):
-            raise ValueError("q must be between 0 and 1.")
+        q = np.asarray(q)
+
+        if np.any((q < 0.0) | (q > 1.0)):
+            raise ValueError("q must be between 0 and 1")
+        
         if rng is None:
             rng = np.random.default_rng(seed)
         s = self.sample(n, rng=rng, seed=seed)
@@ -64,7 +67,8 @@ class Distribution(Sampleable):
             ],
             method,
         )
-        return float(np.quantile(s, q, method=method_lit))
+        result = np.quantile(s, q, method=method_lit)
+        return result.item() if result.ndim == 0 else result
     
     def cdf(self, x: float, n: int = 200_000, *, rng=None, seed: int = 0) -> float:
         """
@@ -134,9 +138,6 @@ class Normal(Distribution):
             s = float(self.sigma)
             sigma2 = s**2
         return sigma2 + mu_var
-    
-    def quantile(self, q: float, n: int = 50000, *, method: str = "linear", rng: Optional[np.random.Generator] = None, seed: int = 0) -> float:
-        return super().quantile(q, n, rng=rng, method=method, seed=seed)
 
 
 class Uniform(Distribution):
@@ -178,9 +179,6 @@ class Uniform(Distribution):
         term1 = (low_v + high_v + (high_m - low_m) ** 2) / 12.0
         term2 = (low_v + high_v) / 4.0
         return term1 + term2
-    
-    def quantile(self, q: float, n: int = 50000, *, method: str = "linear", rng: Optional[np.random.Generator] = None, seed: int = 0) -> float:
-        return super().quantile(q, n, rng=rng, method=method, seed=seed)
 
 
 class LogNormal(Distribution):
@@ -254,9 +252,6 @@ class LogNormal(Distribution):
         Vy_cond = (np.exp(sg_s**2) - 1.0) * np.exp(2.0 * mu_s + sg_s**2)
 
         return float(np.mean(Vy_cond) + np.var(Ey_cond, ddof=0))
-    
-    def quantile(self, q: float, n: int = 50000, *, method: str = "linear", rng: Optional[np.random.Generator] = None, seed: int = 0) -> float:
-        return super().quantile(q, n, rng=rng, method=method, seed=seed)
 
 
 class Beta(Distribution):
@@ -346,9 +341,6 @@ class Beta(Distribution):
         v = (a * b) / (s * s * (s + 1.0))
 
         return float(np.mean(v) + np.var(m, ddof=0))
-    
-    def quantile(self, q: float, n: int = 50000, *, method: str = "linear", rng: Optional[np.random.Generator] = None, seed: int = 0) -> float:
-        return super().quantile(q, n, rng=rng, method=method, seed=seed)
 
 
 

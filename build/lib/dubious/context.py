@@ -40,12 +40,17 @@ class Context:
         memo[root_id] = new_node.id
         return new_node.id
 
-    def set_corr(self, a_id: int, b_id: int, rho: float) -> None:
-        if not (-1.0 <= rho <= 1.0):
-            raise ValueError("rho must be in [-1, 1].")
-        if a_id == b_id:
-            raise ValueError("Cannot correlate a leaf with itself.")
-        if self.get(a_id).op != Op.LEAF or self.get(b_id).op != Op.LEAF:
-            raise ValueError("set_leaf_corr currently supports Op.LEAF nodes only.")
-        key = (a_id, b_id) if a_id < b_id else (b_id, a_id)
+    def set_corr(self, a: int, b: int, rho: float):
+        """
+        Sets correlation between to uncertain leaf nodes using gaussian copular.
+        """
+        if a == b:
+            return
+        key = (a, b) if a < b else (b, a)
         self._corr[key] = float(rho)
+
+    def get_corr(self, a: int, b: int) -> float:
+        if a == b:
+            return 1.0
+        key = (a, b) if a < b else (b, a)
+        return self._corr.get(key, 0.0)

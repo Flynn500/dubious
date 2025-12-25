@@ -117,9 +117,9 @@ class Uncertain(Sampleable):
         s = self.sample(n, rng, seed=seed)
         return float(np.var(s, ddof=0))
     
-    def quantile(self, q: float, n: int = 50_000, rng: Optional[np.random.Generator] = None, seed: int = 0, method: str = "linear",) -> float:
+    def quantile(self, q: Union[float, np.ndarray], n: int = 50_000, rng: Optional[np.random.Generator] = None, seed: int = 0, method: str = "linear",) -> Union[float,np.ndarray]:
         """
-        Compute the q-th quantile of data.
+        Compute an approximation of the q-th quantile of data.
         Args:
             q (float): Probabilty of quantiles to compute.
             n (int): Number of samples.
@@ -127,8 +127,11 @@ class Uncertain(Sampleable):
         Returns:
             float: quantile
         """
-        if not (0.0 <= q <= 1.0):
-            raise ValueError("q must be between 0 and 1.")
+        q = np.asarray(q)
+
+        if np.any((q < 0.0) | (q > 1.0)):
+            raise ValueError("q must be between 0 and 1")
+        
         s = self.sample(n, rng, seed=seed)
 
         #cast to avoid numpy getting mad
@@ -141,7 +144,9 @@ class Uncertain(Sampleable):
             ],
             method,
         )
-        return float(np.quantile(s, q, method=method_lit))
+        result = np.quantile(s, q, method=method_lit)
+        return result.item() if result.ndim == 0 else result
+
     
     def cdf(self, x: float, n: int = 200_000, *, rng=None, seed: int = 0) -> float:
         """
@@ -304,6 +309,15 @@ def sample_uncertain(u: Uncertain, session: SampleSession) -> np.ndarray:
         if node.op == Op.LEAF:
             if node.payload is None:
                 raise RuntimeError("LEAF node has no payload.")
+            
+            if not session.correlation_prepared:
+                session.prepare_correlation(ctx)
+
+            group_id = session.leaf_to_group.get(node_id)
+            if group_id is not None:
+                session.group_samplers[group_id](session)
+                return session.cache[node_id]
+
             result = node.payload.sample(session.n, rng=session.rng)
 
         elif node.op == Op.CONST:
