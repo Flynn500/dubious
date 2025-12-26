@@ -149,7 +149,7 @@ class Uncertain(Sampleable):
     def freeze(self, n: int, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None):
         """
         Freeze an uncertain object. Sample once and cache the result for all future 
-        operations until unfreeze() or freeze() with a different value of n is called.
+        operations until unfreeze() or freeze() is called with a different value of n.
 
         :param n: Number of samples.
         :type n: int

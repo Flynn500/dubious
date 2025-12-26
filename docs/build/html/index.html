@@ -239,13 +239,9 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="dubious-documentation">
-<h1>dubious documentation<a class="headerlink" href="#dubious-documentation" title="Link to this heading">¶</a></h1>
-<p>Add your content using <code class="docutils literal notranslate"><span class="pre">reStructuredText</span></code> syntax. See the
-<a class="reference external" href="https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html">reStructuredText</a>
-documentation for details.</p>
+          <p><a class="reference external" href="index.html">← Back to Home</a></p>
 <section id="dubious">
-<h2>Dubious<a class="headerlink" href="#dubious" title="Link to this heading">¶</a></h2>
+<h1>Dubious<a class="headerlink" href="#dubious" title="Link to this heading">¶</a></h1>
 <p>Dubious is a Python library for propagating uncertainty through numerical computations. Instead of collapsing uncertain values into single numbers early, Dubious lets you represent values as probability distributions, combine them with normal arithmetic operations, and only evaluate the resulting uncertainty when you ask for it.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dubious</span> <span class="kn">import</span> <span class="n">Normal</span><span class="p">,</span> <span class="n">Beta</span><span class="p">,</span> <span class="n">Uncertain</span><span class="p">,</span> <span class="n">Context</span>
 
@@ -263,17 +259,17 @@ documentation for details.</p>
 <p>By default, distributions are assumed to be independent. We can correlate two uncertain objects using <code class="docutils literal notranslate"><span class="pre">a.corr(b,rho)</span></code>, implemented via Gaussian copula (see notes for details).</p>
 <p>After applying any numerical operations to <code class="docutils literal notranslate"><span class="pre">Uncertain</span></code> objects, sampling and evaluation only occur when calling a function like <code class="docutils literal notranslate"><span class="pre">mean()</span></code>, <code class="docutils literal notranslate"><span class="pre">quantile()</span></code> or <code class="docutils literal notranslate"><span class="pre">sample()</span></code> is called.</p>
 <section id="installation">
-<h3>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h3>
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
 <p>With python v3.9+ <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">dubious</span></code></p>
 </section>
 <section id="notes-for-the-user">
-<h3>Notes for the user<a class="headerlink" href="#notes-for-the-user" title="Link to this heading">¶</a></h3>
+<h2>Notes for the user<a class="headerlink" href="#notes-for-the-user" title="Link to this heading">¶</a></h2>
 <p>If several instances of the same <code class="docutils literal notranslate"><span class="pre">Uncertain</span></code> object are involved in an operation these are assumed to represent the same variable so the samples used to calculate these values for each will be identical.</p>
 <p>Correlation between Uncertain objects is currently implemented using Gaussian Copula. This rank based correlation and the rho value used to correlate different objects is NOT the same as the pearson coefficient.</p>
 <p>Numpy RNG objects do not need to be provided by default, but they can be optionally provided for any function that generates its result using MC sampling methods, you can alternatively just provide a seed.</p>
 </section>
 <section id="classes">
-<h3>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h3>
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">Distribution()</span></code>:
 Currently supporting Normal, LogNormal, Beta and Uniform distributions. Distribution objects also support using other distribution objects for their parameters, although this may lead to unexpected behaviour in cases where parameters can become negative. For each you distribution can get <code class="docutils literal notranslate"><span class="pre">mean()</span></code>, <code class="docutils literal notranslate"><span class="pre">var()</span></code>, <code class="docutils literal notranslate"><span class="pre">quantile</span></code> and <code class="docutils literal notranslate"><span class="pre">sample()</span></code>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">Uncertain()</span></code>:
@@ -285,7 +281,7 @@ Context objects own the graph through which we manage the uncertainty propagatio
 <hr class="docutils" />
 </section>
 <section id="some-examples">
-<h3>Some examples:<a class="headerlink" href="#some-examples" title="Link to this heading">¶</a></h3>
+<h2>Some examples:<a class="headerlink" href="#some-examples" title="Link to this heading">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dubious.distributions</span> <span class="kn">import</span> <span class="n">Normal</span>
 <span class="kn">from</span> <span class="nn">dubious.core</span> <span class="kn">import</span> <span class="n">Uncertain</span><span class="p">,</span> <span class="n">Context</span>
 
@@ -365,7 +361,6 @@ p10, p90: 282.88651636845674, 1185.6903692334781</p>
 </li>
 </ul>
 </div>
-</section>
 
         </article>
       </div>
@@ -412,14 +407,11 @@ p10, p90: 282.88651636845674, 1185.6903692334781</p>
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">dubious documentation</a><ul>
-<li><a class="reference internal" href="#dubious">Dubious</a><ul>
+<li><a class="reference internal" href="#">Dubious</a><ul>
 <li><a class="reference internal" href="#installation">Installation</a></li>
 <li><a class="reference internal" href="#notes-for-the-user">Notes for the user</a></li>
 <li><a class="reference internal" href="#classes">Classes</a></li>
 <li><a class="reference internal" href="#some-examples">Some examples:</a></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
