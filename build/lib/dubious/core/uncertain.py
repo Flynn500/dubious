@@ -427,6 +427,9 @@ def sample_uncertain(u: Uncertain, session: SampleSession) -> np.ndarray:
         elif node.op == Op.CONST:
             result = np.full(session.n, node.payload)
 
+            if ctx.frozen:
+                _ctx_frozen_put(node_id, result)
+
         else:
             parents = [eval_node(pid) for pid in node.parents]
 

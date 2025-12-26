@@ -1,11 +1,14 @@
 ## 0.3
 ### Added
 - Added correlation via Gaussian Copula
-- Changed import structure. Instead of everything living in the default name space, we have core, distributions and umath.
-- Benchmarks and additional tests
+- Added `freeze()` and `unfreeze()` functions to uncertain and context objects. They will ensure the same set of samples is used for all function calls while frozen. Context freezing is recommended in most cases as it freezes every random node in the graph as well as constants. Freezing uncertain objects individually will lead to semi-random behaviour that isn't as useful in most cases.
+- Benchmarks and additional testing
+
+### Changed
+- Changed import structure. Instead of everything living in the main name space, we have core, distributions and umath.
+- Seeds defaulted to 0 which meant that everything was deterministic by default. We now default as random and only when a seed or rng object is provided are outputs deterministic.
   
 ### Fixed
-- Seeds defaulted to 0 which meant that everything was deterministic by default. We now default as random and only when a seed or rng object is provided are outputs deterministic.
 
 ## 0.2
 ### Added
@@ -27,5 +30,5 @@ Distribution objects
 - Uniform
 - Beta
 - Support for using distribution objects as params
-Uncertain objects
+- Uncertain objects
 - Standard arithmetic through dunder methods
