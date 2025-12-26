@@ -32,6 +32,10 @@ class Uncertain(Sampleable):
                 raise ValueError("Distribution required.")
             
             self._node = self._ctx.add_node(Op.LEAF, parents=(), payload=dist)
+        
+        self._frozen = False
+        self._frozen_n: int | None = None
+        self._frozen_samples: np.ndarray | None = None
     
     @property
     def node_id(self): return self._node.id
@@ -42,6 +46,14 @@ class Uncertain(Sampleable):
     @property
     def ctx(self) -> Context:
         return self._ctx
+    
+    @property
+    def frozen(self) -> bool:
+        return self._frozen
+
+    @property
+    def frozen_n(self) -> int | None:
+        return self._frozen_n
 
     #create uncertain objects from numbers
     @staticmethod
@@ -93,11 +105,17 @@ class Uncertain(Sampleable):
         Returns:
             np.ndarray: Array of sampled points.
         """
+        if self._frozen_samples is not None:
+            if n != self._frozen_samples.shape[0]:
+                raise ValueError(f"Frozen sample length mismatch. To change n, first unfreeze the uncertain object.")
+            return self._frozen_samples
+        
         if rng is None:
             rng = np.random.default_rng(seed) if seed is not None else np.random.default_rng()
         
-        from .sample_session import SampleSession #hacky avoiding
+        from .sample_session import SampleSession
         session = SampleSession(n, rng)
+
         return sample_uncertain(self, session)
 
     def mean(self, n: int = 20_000, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> float:
@@ -147,7 +165,6 @@ class Uncertain(Sampleable):
         )
         result = np.quantile(s, q, method=method_lit)
         return result.item() if result.ndim == 0 else result
-
     
     def cdf(self, x: float, n: int = 200_000, *, rng=None, seed: Union[int, None] = None) -> float:
         """
@@ -165,6 +182,33 @@ class Uncertain(Sampleable):
         s = self.sample(n, rng=rng)
         return float(np.mean(s <= x))
     
+    def freeze(self, n: int, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None):
+        """
+        Freeze an uncertain object. Sample once and cache the result for all future 
+        operations until unfreeze() or freeze() with a different value of n is called.
+        Args:
+            n (int): Number of samples.
+            rng (np.random.Generator): Numpy random generator.
+        Returns:
+            np.ndarray: Array of sampled points.
+        """
+        if self.frozen and self.frozen_n == n: #if they call freeze with same n just return
+            return
+        samples = self.sample(n, rng=rng, seed=seed)
+        samples.setflags(write=False)
+        self._frozen_samples = samples
+        self._frozen = True
+        self._frozen_n = n
+    
+    def unfreeze(self):
+        """
+        Unfreeze an uncertain object, clearing it's cache.
+        """
+        self._frozen = False
+        self._frozen_n = None
+        self._frozen_samples = None
+
+        
     #correlation
     def corr(self, u: "Uncertain", rho: float):
         """
@@ -179,7 +223,6 @@ class Uncertain(Sampleable):
         """
         Uncertain._align_contexts(self, u)
         self._ctx.set_corr(self.node_id, u.node_id, rho)
-
 
 
     #our arithmatic operations
@@ -316,14 +359,38 @@ def sample_uncertain(u: Uncertain, session: SampleSession) -> np.ndarray:
     """
 
     ctx = u.ctx
+
+    #Frozen caching helpers
+    def _ctx_frozen_get(node_id: int) -> np.ndarray | None:
+        if not ctx.frozen:
+            return None
+        if ctx.frozen_n is None:
+            raise RuntimeError("Context is marked frozen but frozen_n is None.")
+        if session.n != ctx.frozen_n:
+            raise ValueError(
+                f"Frozen sample length mismatch for Context. "
+                f"Context frozen_n={ctx.frozen_n}, requested n={session.n}. "
+                f"Call ctx.unfreeze() or ctx.freeze(n) with the new n."
+            )
+        return ctx._frozen_samples.get(node_id)  # uses Context's cache
+
+    def _ctx_frozen_put(node_id: int, samples: np.ndarray) -> None:
+        samples.setflags(write=False)
+        ctx._frozen_samples[node_id] = samples
     
+    #recursive eval function
     def eval_node(node_id: int) -> np.ndarray:
         if node_id in session.cache:
             return session.cache[node_id]
+        
+        frozen_hit = _ctx_frozen_get(node_id)
+        if frozen_hit is not None:
+            session.cache[node_id] = frozen_hit
+            return frozen_hit
 
         node = ctx.get(node_id)
 
-        if node.op == Op.LEAF:
+        if node.op == Op.LEAF:                
             if node.payload is None:
                 raise RuntimeError("LEAF node has no payload.")
             
@@ -331,11 +398,31 @@ def sample_uncertain(u: Uncertain, session: SampleSession) -> np.ndarray:
                 session.prepare_correlation(ctx)
 
             group_id = session.leaf_to_group.get(node_id)
+
             if group_id is not None:
+                if ctx.frozen and group_id in ctx._frozen_groups_done:
+                    frozen_hit = _ctx_frozen_get(node_id)
+
+                    if frozen_hit is None:
+                        raise RuntimeError("Frozen correlated group marked done, but node not found in frozen cache.")
+                    
+                    session.cache[node_id] = frozen_hit
+                    return frozen_hit
+        
                 session.group_samplers[group_id](session)
+
+                if ctx.frozen:
+                    for leaf_id, gid in session.leaf_to_group.items():
+                        if gid == group_id and leaf_id in session.cache:
+                            _ctx_frozen_put(leaf_id, session.cache[leaf_id])
+                    ctx._frozen_groups_done.add(group_id)
+                     
                 return session.cache[node_id]
 
             result = node.payload.sample(session.n, rng=session.rng)
+
+            if ctx.frozen:
+                _ctx_frozen_put(node_id, result)
 
         elif node.op == Op.CONST:
             result = np.full(session.n, node.payload)

@@ -35,7 +35,7 @@ Requires-Dist: scipy>=1.10; extra == "test"
 Dynamic: license-file
 
 # Dubious
-Dubious is a Python library for propagating uncertainty through numerical computations. Instead of collapsing uncertain values into single numbers early, Dubious lets you represent values as probability distributions, combine them with normal arithmetic operations, and only evaluate the resulting uncertainty when you explicitly ask for it.
+Dubious is a Python library for propagating uncertainty through numerical computations. Instead of collapsing uncertain values into single numbers early, Dubious lets you represent values as probability distributions, combine them with normal arithmetic operations, and only evaluate the resulting uncertainty when you ask for it.
 
 ```python
 from dubious import Normal, Beta, Uncertain, Context
@@ -72,11 +72,11 @@ Numpy RNG objects do not need to be provided by default, but they can be optiona
 `Distribution()`:
 Currently supporting Normal, LogNormal, Beta and Uniform distributions. Distribution objects also support using other distribution objects for their parameters, although this may lead to unexpected behaviour in cases where parameters can become negative. For each you distribution can get `mean()`, `var()`, `quantile` and `sample()`.
 
-`Uncertaint()`:
-Uncertaint objects are the wrapper for distributions that allow them to be used like numeric values. Alongside being able to perform numeric operations on these uncertaint objects, they support the same properties as standard distributions (mean, variance, sampling and quantile). You can apply the exact same operations on these objects you might apply to real data, and easily calculate the propagated uncertainty that comes from using several unreliable input values.
+`Uncertain()`:
+Uncertain objects are the wrapper for distributions that allow them to be used like numeric values. Alongside being able to perform numeric operations on these uncertain objects, they support the same properties as standard distributions (mean, variance, sampling and quantile). You can apply the exact same operations on these objects you might apply to real data, and easily calculate the propagated uncertainty that comes from using several unreliable input values.
 
 `Context()`:
-Context objects own the graph through which we manage the uncertainty propagation. You can add uncertaint objects from different contexts, although this is slightly less performant than first creating a context object, and then creating all new uncertaint objects with ctx =  _Your context object_.
+Context objects own the graph through which we manage the uncertainty propagation. You can add uncertain objects from different contexts, although this is slightly less performant than first creating a context object, and then creating all new uncertain objects with ctx =  _Your context object_.
 
 ---
 ### Some examples:
@@ -184,5 +184,5 @@ Distribution objects
 - Uniform
 - Beta
 - Support for using distribution objects as params
-Uncertainty objects
+Uncertain objects
 - Standard arithmetic through dunder methods

@@ -27,5 +27,5 @@ Distribution objects
 - Uniform
 - Beta
 - Support for using distribution objects as params
-Uncertainty objects
+Uncertain objects
 - Standard arithmetic through dunder methods
