@@ -18,7 +18,7 @@ The key idea behind Dubious is lazy uncertainty propagation. We don't calculate 
 
 By default, distributions are assumed to be independent. We can correlate two uncertain objects using `a.corr(b,rho)`, implemented via Gaussian copula (see notes for details). 
 
-After applying any numerical operations to `Uncertain` objects, sampling and evaluation only occur when calling a function like `mean()`, `quantile()` or `sample()` are called. 
+After applying any numerical operations to `Uncertain` objects, sampling and evaluation only occur when calling a function like `mean()`, `quantile()` or `sample()` is called. 
 
 ### Installation
 With python v3.9+ `pip install dubious`
@@ -69,7 +69,7 @@ print("Variance:", area.var())
 print("Some samples:", area.sample(5))
 ```
 
-We can also use distribution and uncertaint objects as parameters.
+We can also use distribution and uncertain objects as parameters.
 
 ```python
 from dubious.distributions import Normal, Beta

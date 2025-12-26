@@ -1,3 +1,12 @@
+## 0.3
+### Added
+- Added correlation via Gaussian Copula
+- Changed import structure. Instead of everything living in the default name space, we have core, distributions and umath.
+- Benchmarks and additional tests
+  
+### Fixed
+- Seeds defaulted to 0 which meant that everything was deterministic by default. We now default as random and only when a seed or rng object is provided are outputs deterministic.
+
 ## 0.2
 ### Added
 - Context objects now handle graph ownership and can be merged, e.g. Uncertain objects from different contexts can be used together.
