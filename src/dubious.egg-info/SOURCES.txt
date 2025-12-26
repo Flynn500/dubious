@@ -15,7 +15,11 @@ src/dubious/core/sample_session.py
 src/dubious/core/sampleable.py
 src/dubious/core/uncertain.py
 src/dubious/distributions/__init__.py
-src/dubious/distributions/distributions.py
+src/dubious/distributions/beta.py
+src/dubious/distributions/dist_helpers.py
+src/dubious/distributions/lognormal.py
+src/dubious/distributions/normal.py
+src/dubious/distributions/uniform.py
 src/dubious/umath/__init__.py
 src/dubious/umath/umath.py
 src/dubious/umath/ustats.py

@@ -1,4 +1,7 @@
-from .distributions import Normal, LogNormal, Uniform, Beta
+from .normal import Normal
+from.lognormal import LogNormal
+from .uniform import Uniform
+from .beta import Beta
 
 __all__ = [
     "Normal",
