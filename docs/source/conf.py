@@ -9,7 +9,7 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("../.."))
+sys.path.insert(0, os.path.abspath("../src"))
 
 project = 'dubious'
 copyright = '2025, Flynn Wilson'
@@ -47,8 +47,6 @@ autodoc_typehints = "description"
 
 html_theme = 'furo'
 html_static_path = ['_static']
-
-extensions += ["myst_parser"]
 
 source_suffix = {
     ".rst": "restructuredtext",
