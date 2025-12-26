@@ -97,14 +97,6 @@ class Uncertain(Sampleable):
 
     #statistical methods
     def sample(self, n: int, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> np.ndarray:
-        """
-        Sample points from a distribution
-        Args:
-            n (int): Number of samples.
-            rng (np.random.Generator): Numpy random generator.
-        Returns:
-            np.ndarray: Array of sampled points.
-        """
         if self._frozen_samples is not None:
             if n != self._frozen_samples.shape[0]:
                 raise ValueError(f"Frozen sample length mismatch. To change n, first unfreeze the uncertain object.")
@@ -119,33 +111,14 @@ class Uncertain(Sampleable):
         return sample_uncertain(self, session)
 
     def mean(self, n: int = 20_000, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> float:
-        """
-        Get the mean of a distribution
-        Returns:
-            float: mean
-        """
         s = self.sample(n, rng, seed=seed)
         return float(np.mean(s))
     
     def var(self, n: int = 20_000, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None):
-        """
-        Get the variance of a distribution
-        Returns:
-            float: variance
-        """
         s = self.sample(n, rng, seed=seed)
         return float(np.var(s, ddof=0))
     
     def quantile(self, q: Union[float, np.ndarray], n: int = 50_000, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None, method: str = "linear",) -> Union[float,np.ndarray]:
-        """
-        Compute an approximation of the q-th quantile of data.
-        Args:
-            q (float): Probabilty of quantiles to compute.
-            n (int): Number of samples.
-            rng (np.random.Generator): Numpy random generator.
-        Returns:
-            float: quantile
-        """
         q = np.asarray(q)
 
         if np.any((q < 0.0) | (q > 1.0)):
@@ -167,15 +140,6 @@ class Uncertain(Sampleable):
         return result.item() if result.ndim == 0 else result
     
     def cdf(self, x: float, n: int = 200_000, *, rng=None, seed: Union[int, None] = None) -> float:
-        """
-        Compute an approximation of the cumulative density function. 
-        Args:
-            x (float): Value.
-            n (int): Number of samples.
-            rng (np.random.Generator): Numpy random generator.
-        Returns:
-            float: quantile
-        """
         if rng is None:
             rng = np.random.default_rng(seed)
         
@@ -186,11 +150,13 @@ class Uncertain(Sampleable):
         """
         Freeze an uncertain object. Sample once and cache the result for all future 
         operations until unfreeze() or freeze() with a different value of n is called.
-        Args:
-            n (int): Number of samples.
-            rng (np.random.Generator): Numpy random generator.
-        Returns:
-            np.ndarray: Array of sampled points.
+
+        :param n: Number of samples.
+        :type n: int
+        :param rng: NumPy random number generator.
+        :type rng: np.random.Generator
+        :return: Array of sampled points.
+        :rtype: np.ndarray
         """
         if self.frozen and self.frozen_n == n: #if they call freeze with same n just return
             return
@@ -215,11 +181,11 @@ class Uncertain(Sampleable):
         Correlate this Uncertain object with another using Gaussian Copular. 
         Both objects must be a leaf nodes, meaning they have not yet had any numerical 
         operations applied to them. 
-        Args:
-            u (Uncertain): The object with which to correlate.
-            rho (int): Gaussian copula correlation parameter.
-        Returns:
-            None
+
+        :param u: The object with which to correlate.
+        :type n: Uncertain
+        :param rho: Gaussian copula correlation parameter.
+        :type n: float
         """
         Uncertain._align_contexts(self, u)
         self._ctx.set_corr(self.node_id, u.node_id, rho)
@@ -348,16 +314,6 @@ class Uncertain(Sampleable):
     
 
 def sample_uncertain(u: Uncertain, session: SampleSession) -> np.ndarray:
-    """
-    Sample points from a composite distribution.
-        Args:
-            u (Uncertain) Uncertain object to sample.
-            n (int): Number of samples.
-            rng (np.random.Generator): Numpy random generator.
-    Returns:
-        np.ndarray: Array of sampled points.
-    """
-
     ctx = u.ctx
 
     #Frozen caching helpers

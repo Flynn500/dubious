@@ -249,6 +249,39 @@
 Creating a context is not required to add Uncertain objects together, but it is preffered as
 merging seperate contexts can be expensive.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="dubious.core.Context.add_node">
+<span class="sig-name descname"><span class="pre">add_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parents</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payload</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/core/context.html#Context.add_node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.core.Context.add_node" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Node</span></code></span></p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>op</strong> (<em>Op</em>)</p></li>
+<li><p><strong>parents</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>...</em><em>]</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dubious.core.Context.copy_subgraph_from">
+<span class="sig-name descname"><span class="pre">copy_subgraph_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_id</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">memo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/core/context.html#Context.copy_subgraph_from"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.core.Context.copy_subgraph_from" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span></p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>src</strong> (<a class="reference internal" href="#dubious.core.Context" title="dubious.core.context.Context"><em>Context</em></a>)</p></li>
+<li><p><strong>root_id</strong> (<em>int</em>)</p></li>
+<li><p><strong>memo</strong> (<em>Dict</em><em>[</em><em>int</em><em>, </em><em>int</em><em>] </em><em>| </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="dubious.core.Context.freeze">
 <span class="sig-name descname"><span class="pre">freeze</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/core/context.html#Context.freeze"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.core.Context.freeze" title="Link to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
@@ -375,25 +408,12 @@ merging seperate contexts can be expensive.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="dubious.core.Uncertain.cdf">
 <span class="sig-name descname"><span class="pre">cdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200000</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/core/uncertain.html#Uncertain.cdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.core.Uncertain.cdf" title="Link to this definition">¶</a></dt>
-<dd><p>Compute an approximation of the cumulative density function.
-:type x: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>
-:param x: Value.
-:type x: float
-:type n: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>
-:param n: Number of samples.
-:type n: int
-:type rng: np.random.Generator
-:param rng: Numpy random generator.
-:type rng: np.random.Generator</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>quantile</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span></p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>float</p>
-</dd>
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
 <li><p><strong>x</strong> (<em>float</em>)</p></li>
 <li><p><strong>n</strong> (<em>int</em>)</p></li>
 <li><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em>)</p></li>
@@ -423,21 +443,12 @@ merging seperate contexts can be expensive.</p>
 <span class="sig-name descname"><span class="pre">corr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/core/uncertain.html#Uncertain.corr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.core.Uncertain.corr" title="Link to this definition">¶</a></dt>
 <dd><p>Correlate this Uncertain object with another using Gaussian Copular.
 Both objects must be a leaf nodes, meaning they have not yet had any numerical
-operations applied to them.
-:type u: <span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dubious.core.Uncertain" title="dubious.core.uncertain.Uncertain"><code class="xref py py-class docutils literal notranslate"><span class="pre">Uncertain</span></code></a></span>
-:param u: The object with which to correlate.
-:type u: Uncertain
-:type rho: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>
-:param rho: Gaussian copula correlation parameter.
-:type rho: int</p>
+operations applied to them.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-<dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><ul class="simple">
-<li><p><strong>u</strong> (<a class="reference internal" href="#dubious.core.Uncertain" title="dubious.core.uncertain.Uncertain"><em>Uncertain</em></a>)</p></li>
-<li><p><strong>rho</strong> (<em>float</em>)</p></li>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dubious.core.Uncertain" title="dubious.core.uncertain.Uncertain"><code class="xref py py-class docutils literal notranslate"><span class="pre">Uncertain</span></code></a></span>) – The object with which to correlate.</p></li>
+<li><p><strong>rho</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Gaussian copula correlation parameter.</p></li>
 </ul>
 </dd>
 </dl>
@@ -462,26 +473,20 @@ operations applied to them.
 <dt class="sig sig-object py" id="dubious.core.Uncertain.freeze">
 <span class="sig-name descname"><span class="pre">freeze</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/core/uncertain.html#Uncertain.freeze"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.core.Uncertain.freeze" title="Link to this definition">¶</a></dt>
 <dd><p>Freeze an uncertain object. Sample once and cache the result for all future
-operations until unfreeze() or freeze() with a different value of n is called.
-:type n: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>
-:param n: Number of samples.
-:type n: int
-:type rng: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code>]</span>
-:param rng: Numpy random generator.
-:type rng: np.random.Generator</p>
+operations until unfreeze() or freeze() with a different value of n is called.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Array of sampled points.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>np.ndarray</p>
-</dd>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n</strong> (<em>int</em>)</p></li>
-<li><p><strong>rng</strong> (<em>Generator</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of samples.</p></li>
+<li><p><strong>rng</strong> (<em>np.random.Generator</em>) – NumPy random number generator.</p></li>
 <li><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em>)</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of sampled points.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -512,19 +517,20 @@ operations until unfreeze() or freeze() with a different value of n is called.
 <dl class="py method">
 <dt class="sig sig-object py" id="dubious.core.Uncertain.mean">
 <span class="sig-name descname"><span class="pre">mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/core/uncertain.html#Uncertain.mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.core.Uncertain.mean" title="Link to this definition">¶</a></dt>
-<dd><p>Get the mean of a distribution
-:returns: mean
-:rtype: float</p>
+<dd><p>Get the mean of a distribution.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Mean.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>n</strong> (<em>int</em>)</p></li>
 <li><p><strong>rng</strong> (<em>Generator</em><em> | </em><em>None</em>)</p></li>
 <li><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em>)</p></li>
 </ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -542,25 +548,12 @@ operations until unfreeze() or freeze() with a different value of n is called.
 <dl class="py method">
 <dt class="sig sig-object py" id="dubious.core.Uncertain.quantile">
 <span class="sig-name descname"><span class="pre">quantile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/core/uncertain.html#Uncertain.quantile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.core.Uncertain.quantile" title="Link to this definition">¶</a></dt>
-<dd><p>Compute an approximation of the q-th quantile of data.
-:type q: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</span>
-:param q: Probabilty of quantiles to compute.
-:type q: float
-:type n: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>
-:param n: Number of samples.
-:type n: int
-:type rng: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code>]</span>
-:param rng: Numpy random generator.
-:type rng: np.random.Generator</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>quantile</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</span></p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>float</p>
-</dd>
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
 <li><p><strong>q</strong> (<em>float</em><em> | </em><em>ndarray</em>)</p></li>
 <li><p><strong>n</strong> (<em>int</em>)</p></li>
 <li><p><strong>rng</strong> (<em>Generator</em><em> | </em><em>None</em>)</p></li>
@@ -574,26 +567,20 @@ operations until unfreeze() or freeze() with a different value of n is called.
 <dl class="py method">
 <dt class="sig sig-object py" id="dubious.core.Uncertain.sample">
 <span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/core/uncertain.html#Uncertain.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.core.Uncertain.sample" title="Link to this definition">¶</a></dt>
-<dd><p>Sample points from a distribution
-:type n: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>
-:param n: Number of samples.
-:type n: int
-:type rng: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code>]</span>
-:param rng: Numpy random generator.
-:type rng: np.random.Generator</p>
+<dd><p>Sample points from a distribution.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Array of sampled points.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>np.ndarray</p>
-</dd>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n</strong> (<em>int</em>)</p></li>
-<li><p><strong>rng</strong> (<em>Generator</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of samples.</p></li>
+<li><p><strong>rng</strong> (<em>np.random.Generator</em>) – NumPy random number generator.</p></li>
 <li><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em>)</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of sampled points.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -627,10 +614,14 @@ operations until unfreeze() or freeze() with a different value of n is called.
 <dl class="py method">
 <dt class="sig sig-object py" id="dubious.core.Uncertain.var">
 <span class="sig-name descname"><span class="pre">var</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/core/uncertain.html#Uncertain.var"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.core.Uncertain.var" title="Link to this definition">¶</a></dt>
-<dd><p>Get the variance of a distribution
-:returns: variance
-:rtype: float</p>
+<dd><p>Get the variance of a distribution.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Variance.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>n</strong> (<em>int</em>)</p></li>
@@ -702,6 +693,8 @@ operations until unfreeze() or freeze() with a different value of n is called.
             <ul>
 <li><a class="reference internal" href="#">Core</a><ul>
 <li><a class="reference internal" href="#dubious.core.Context"><code class="docutils literal notranslate"><span class="pre">Context</span></code></a><ul>
+<li><a class="reference internal" href="#dubious.core.Context.add_node"><code class="docutils literal notranslate"><span class="pre">Context.add_node()</span></code></a></li>
+<li><a class="reference internal" href="#dubious.core.Context.copy_subgraph_from"><code class="docutils literal notranslate"><span class="pre">Context.copy_subgraph_from()</span></code></a></li>
 <li><a class="reference internal" href="#dubious.core.Context.freeze"><code class="docutils literal notranslate"><span class="pre">Context.freeze()</span></code></a></li>
 <li><a class="reference internal" href="#dubious.core.Context.frozen"><code class="docutils literal notranslate"><span class="pre">Context.frozen</span></code></a></li>
 <li><a class="reference internal" href="#dubious.core.Context.frozen_n"><code class="docutils literal notranslate"><span class="pre">Context.frozen_n</span></code></a></li>

@@ -11,9 +11,6 @@ Subpackages
    dubious.distributions
    dubious.umath
 
-Module contents
----------------
-
 .. automodule:: dubious
    :members:
    :show-inheritance:

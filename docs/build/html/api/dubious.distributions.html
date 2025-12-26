@@ -256,19 +256,11 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="dubious.distributions.Beta.mean">
 <span class="sig-name descname"><span class="pre">mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200000</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/distributions/beta.html#Beta.mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.distributions.Beta.mean" title="Link to this definition">¶</a></dt>
-<dd><p>Get the mean of a distribution
-:type n: int
-:param n: Only applies when paramaters are distributions. Number of samples used in MC aproximation.
-:type n: int
-:type rng: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code>]</span>
-:param rng: Random generator to use when sampling.
-:type rng: np.random.Generator
-:type seed: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</span>
-:param seed: RNG seed.
-:type seed: int</p>
+<dd><p>Get the mean of a distribution. Defaults to monte carlo simulation if other
+dsitributions are used as parameters otherwise anakytic methods are used.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>mean</p>
+<dd class="field-odd"><p>Mean.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>float</p>
@@ -285,26 +277,20 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="dubious.distributions.Beta.sample">
 <span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/distributions/beta.html#Beta.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.distributions.Beta.sample" title="Link to this definition">¶</a></dt>
-<dd><p>Sample points from a distribution
-:type n: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>
-:param n: Number of samples.
-:type n: int
-:type rng: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code>]</span>
-:param rng: Numpy random generator.
-:type rng: np.random.Generator</p>
+<dd><p>Sample points from a distribution.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Array of sampled points.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>np.ndarray</p>
-</dd>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n</strong> (<em>int</em>)</p></li>
-<li><p><strong>rng</strong> (<em>Generator</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of samples.</p></li>
+<li><p><strong>rng</strong> (<em>np.random.Generator</em>) – NumPy random number generator.</p></li>
 <li><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em>)</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of sampled points.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -312,19 +298,11 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="dubious.distributions.Beta.var">
 <span class="sig-name descname"><span class="pre">var</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200000</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/distributions/beta.html#Beta.var"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.distributions.Beta.var" title="Link to this definition">¶</a></dt>
-<dd><p>Get the variance of a distribution
-:type n: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>
-:param n: Only applies when paramaters are distributions. Number of samples used in MC aproximation.
-:type n: int
-:type rng: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code>]</span>
-:param rng: Random generator to use when sampling.
-:type rng: np.random.Generator
-:type seed: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</span>
-:param seed: RNG seed.
-:type seed: int</p>
+<dd><p>Get the variance of a distribution. Defaults to monte carlo simulation if other
+dsitributions are used as parameters otherwise anakytic methods are used.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>mean</p>
+<dd class="field-odd"><p>Variance.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>float</p>
@@ -356,19 +334,11 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="dubious.distributions.LogNormal.mean">
 <span class="sig-name descname"><span class="pre">mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200000</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/distributions/lognormal.html#LogNormal.mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.distributions.LogNormal.mean" title="Link to this definition">¶</a></dt>
-<dd><p>Get the mean of a distribution
-:type n: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>
-:param n: Only applies when paramaters are distributions. Number of samples used in MC aproximation.
-:type n: int
-:type rng: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code>]</span>
-:param rng: Random generator to use when sampling.
-:type rng: np.random.Generator
-:type seed: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</span>
-:param seed: RNG seed.
-:type seed: int</p>
+<dd><p>Get the mean of a distribution. Defaults to monte carlo simulation if other
+dsitributions are used as parameters otherwise anakytic methods are used.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>mean</p>
+<dd class="field-odd"><p>Mean.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>float</p>
@@ -386,26 +356,20 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="dubious.distributions.LogNormal.sample">
 <span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/distributions/lognormal.html#LogNormal.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.distributions.LogNormal.sample" title="Link to this definition">¶</a></dt>
-<dd><p>Sample points from a distribution
-:type n: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>
-:param n: Number of samples.
-:type n: int
-:type rng: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code>]</span>
-:param rng: Numpy random generator.
-:type rng: np.random.Generator</p>
+<dd><p>Sample points from a distribution.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Array of sampled points.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>np.ndarray</p>
-</dd>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n</strong> (<em>int</em>)</p></li>
-<li><p><strong>rng</strong> (<em>Generator</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of samples.</p></li>
+<li><p><strong>rng</strong> (<em>np.random.Generator</em>) – NumPy random number generator.</p></li>
 <li><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em>)</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of sampled points.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -413,19 +377,11 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="dubious.distributions.LogNormal.var">
 <span class="sig-name descname"><span class="pre">var</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200000</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/distributions/lognormal.html#LogNormal.var"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.distributions.LogNormal.var" title="Link to this definition">¶</a></dt>
-<dd><p>Get the variance of a distribution
-:type n: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>
-:param n: Only applies when paramaters are distributions. Number of samples used in MC aproximation.
-:type n: int
-:type rng: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code>]</span>
-:param rng: Random generator to use when sampling.
-:type rng: np.random.Generator
-:type seed: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</span>
-:param seed: RNG seed.
-:type seed: int</p>
+<dd><p>Get the variance of a distribution. Defaults to monte carlo simulation if other
+dsitributions are used as parameters otherwise anakytic methods are used.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>mean</p>
+<dd class="field-odd"><p>Variance.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>float</p>
@@ -457,12 +413,14 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="dubious.distributions.Normal.mean">
 <span class="sig-name descname"><span class="pre">mean</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/distributions/normal.html#Normal.mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.distributions.Normal.mean" title="Link to this definition">¶</a></dt>
-<dd><p>Get the mean of a distribution
-:returns: mean
-:rtype: float</p>
+<dd><p>Get the mean of a distribution. Defaults to monte carlo simulation if other
+dsitributions are used as parameters otherwise anakytic methods are used.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Mean.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -470,26 +428,20 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="dubious.distributions.Normal.sample">
 <span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/distributions/normal.html#Normal.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.distributions.Normal.sample" title="Link to this definition">¶</a></dt>
-<dd><p>Sample points from a distribution
-:type n: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>
-:param n: Number of samples.
-:type n: int
-:type rng: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code>]</span>
-:param rng: Numpy random generator.
-:type rng: np.random.Generator</p>
+<dd><p>Sample points from a distribution.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Array of sampled points.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>np.ndarray</p>
-</dd>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n</strong> (<em>int</em>)</p></li>
-<li><p><strong>rng</strong> (<em>Generator</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of samples.</p></li>
+<li><p><strong>rng</strong> (<em>np.random.Generator</em>) – NumPy random number generator.</p></li>
 <li><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em>)</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of sampled points.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -497,12 +449,14 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="dubious.distributions.Normal.var">
 <span class="sig-name descname"><span class="pre">var</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/distributions/normal.html#Normal.var"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.distributions.Normal.var" title="Link to this definition">¶</a></dt>
-<dd><p>Get the variance of a distribution
-:returns: variance
-:rtype: float</p>
+<dd><p>Get the variance of a distribution. Defaults to monte carlo simulation if other
+dsitributions are used as parameters otherwise anakytic methods are used.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Variance.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -524,12 +478,14 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="dubious.distributions.Uniform.mean">
 <span class="sig-name descname"><span class="pre">mean</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/distributions/uniform.html#Uniform.mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.distributions.Uniform.mean" title="Link to this definition">¶</a></dt>
-<dd><p>Get the mean of a distribution
-:returns: mean
-:rtype: float</p>
+<dd><p>Get the mean of a distribution. Defaults to monte carlo simulation if other
+dsitributions are used as parameters otherwise anakytic methods are used.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Mean.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -537,26 +493,20 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="dubious.distributions.Uniform.sample">
 <span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/distributions/uniform.html#Uniform.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.distributions.Uniform.sample" title="Link to this definition">¶</a></dt>
-<dd><p>Sample points from a distribution
-:type n: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>
-:param n: Number of samples.
-:type n: int
-:type rng: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code>]</span>
-:param rng: Numpy random generator.
-:type rng: np.random.Generator</p>
+<dd><p>Sample points from a distribution.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Array of sampled points.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>np.ndarray</p>
-</dd>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n</strong> (<em>int</em>)</p></li>
-<li><p><strong>rng</strong> (<em>Generator</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of samples.</p></li>
+<li><p><strong>rng</strong> (<em>np.random.Generator</em>) – NumPy random number generator.</p></li>
 <li><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em>)</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of sampled points.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -564,12 +514,14 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="dubious.distributions.Uniform.var">
 <span class="sig-name descname"><span class="pre">var</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dubious/distributions/uniform.html#Uniform.var"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dubious.distributions.Uniform.var" title="Link to this definition">¶</a></dt>
-<dd><p>Get the variance of a distribution
-:returns: variance
-:rtype: float</p>
+<dd><p>Get the variance of a distribution. Defaults to monte carlo simulation if other
+dsitributions are used as parameters otherwise anakytic methods are used.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Variance.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
 </dd>
 </dl>
 </dd></dl>

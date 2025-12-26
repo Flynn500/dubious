@@ -339,14 +339,6 @@
 <div class="viewcode-block" id="Uncertain.sample">
 <a class="viewcode-back" href="../../../api/dubious.core.html#dubious.core.Uncertain.sample">[docs]</a>
     <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Sample points from a distribution</span>
-<span class="sd">        Args:</span>
-<span class="sd">            n (int): Number of samples.</span>
-<span class="sd">            rng (np.random.Generator): Numpy random generator.</span>
-<span class="sd">        Returns:</span>
-<span class="sd">            np.ndarray: Array of sampled points.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frozen_samples</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">n</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frozen_samples</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Frozen sample length mismatch. To change n, first unfreeze the uncertain object.&quot;</span><span class="p">)</span>
@@ -364,11 +356,6 @@
 <div class="viewcode-block" id="Uncertain.mean">
 <a class="viewcode-back" href="../../../api/dubious.core.html#dubious.core.Uncertain.mean">[docs]</a>
     <span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20_000</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get the mean of a distribution</span>
-<span class="sd">        Returns:</span>
-<span class="sd">            float: mean</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">s</span><span class="p">))</span></div>
 
@@ -376,11 +363,6 @@
 <div class="viewcode-block" id="Uncertain.var">
 <a class="viewcode-back" href="../../../api/dubious.core.html#dubious.core.Uncertain.var">[docs]</a>
     <span class="k">def</span> <span class="nf">var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20_000</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get the variance of a distribution</span>
-<span class="sd">        Returns:</span>
-<span class="sd">            float: variance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span></div>
 
@@ -388,15 +370,6 @@
 <div class="viewcode-block" id="Uncertain.quantile">
 <a class="viewcode-back" href="../../../api/dubious.core.html#dubious.core.Uncertain.quantile">[docs]</a>
     <span class="k">def</span> <span class="nf">quantile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50_000</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;linear&quot;</span><span class="p">,)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Compute an approximation of the q-th quantile of data.</span>
-<span class="sd">        Args:</span>
-<span class="sd">            q (float): Probabilty of quantiles to compute.</span>
-<span class="sd">            n (int): Number of samples.</span>
-<span class="sd">            rng (np.random.Generator): Numpy random generator.</span>
-<span class="sd">        Returns:</span>
-<span class="sd">            float: quantile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">((</span><span class="n">q</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">q</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">)):</span>
@@ -421,15 +394,6 @@
 <div class="viewcode-block" id="Uncertain.cdf">
 <a class="viewcode-back" href="../../../api/dubious.core.html#dubious.core.Uncertain.cdf">[docs]</a>
     <span class="k">def</span> <span class="nf">cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200_000</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Compute an approximation of the cumulative density function. </span>
-<span class="sd">        Args:</span>
-<span class="sd">            x (float): Value.</span>
-<span class="sd">            n (int): Number of samples.</span>
-<span class="sd">            rng (np.random.Generator): Numpy random generator.</span>
-<span class="sd">        Returns:</span>
-<span class="sd">            float: quantile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">rng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
         
@@ -443,11 +407,13 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Freeze an uncertain object. Sample once and cache the result for all future </span>
 <span class="sd">        operations until unfreeze() or freeze() with a different value of n is called.</span>
-<span class="sd">        Args:</span>
-<span class="sd">            n (int): Number of samples.</span>
-<span class="sd">            rng (np.random.Generator): Numpy random generator.</span>
-<span class="sd">        Returns:</span>
-<span class="sd">            np.ndarray: Array of sampled points.</span>
+
+<span class="sd">        :param n: Number of samples.</span>
+<span class="sd">        :type n: int</span>
+<span class="sd">        :param rng: NumPy random number generator.</span>
+<span class="sd">        :type rng: np.random.Generator</span>
+<span class="sd">        :return: Array of sampled points.</span>
+<span class="sd">        :rtype: np.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">frozen</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">frozen_n</span> <span class="o">==</span> <span class="n">n</span><span class="p">:</span> <span class="c1">#if they call freeze with same n just return</span>
             <span class="k">return</span>
@@ -478,11 +444,11 @@
 <span class="sd">        Correlate this Uncertain object with another using Gaussian Copular. </span>
 <span class="sd">        Both objects must be a leaf nodes, meaning they have not yet had any numerical </span>
 <span class="sd">        operations applied to them. </span>
-<span class="sd">        Args:</span>
-<span class="sd">            u (Uncertain): The object with which to correlate.</span>
-<span class="sd">            rho (int): Gaussian copula correlation parameter.</span>
-<span class="sd">        Returns:</span>
-<span class="sd">            None</span>
+
+<span class="sd">        :param u: The object with which to correlate.</span>
+<span class="sd">        :type n: Uncertain</span>
+<span class="sd">        :param rho: Gaussian copula correlation parameter.</span>
+<span class="sd">        :type n: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">Uncertain</span><span class="o">.</span><span class="n">_align_contexts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span><span class="o">.</span><span class="n">set_corr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">rho</span><span class="p">)</span></div>

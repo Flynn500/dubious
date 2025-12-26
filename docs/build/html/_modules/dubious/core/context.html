@@ -271,10 +271,13 @@
     <span class="k">def</span> <span class="nf">frozen_n</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frozen_n</span>
 
+<div class="viewcode-block" id="Context.add_node">
+<a class="viewcode-back" href="../../../api/dubious.core.html#dubious.core.Context.add_node">[docs]</a>
     <span class="k">def</span> <span class="nf">add_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">Op</span><span class="p">,</span> <span class="n">parents</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span> <span class="n">payload</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Node</span><span class="p">:</span>
         <span class="n">node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ids</span><span class="p">),</span> <span class="n">op</span><span class="o">=</span><span class="n">op</span><span class="p">,</span> <span class="n">parents</span><span class="o">=</span><span class="n">parents</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span>
-        <span class="k">return</span> <span class="n">node</span>
+        <span class="k">return</span> <span class="n">node</span></div>
+
 
 <div class="viewcode-block" id="Context.get">
 <a class="viewcode-back" href="../../../api/dubious.core.html#dubious.core.Context.get">[docs]</a>
@@ -315,6 +318,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_frozen_n</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 
+<div class="viewcode-block" id="Context.copy_subgraph_from">
+<a class="viewcode-back" href="../../../api/dubious.core.html#dubious.core.Context.copy_subgraph_from">[docs]</a>
     <span class="k">def</span> <span class="nf">copy_subgraph_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">:</span> <span class="s2">&quot;Context&quot;</span><span class="p">,</span> <span class="n">root_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">memo</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">memo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">memo</span> <span class="o">=</span> <span class="p">{}</span>
@@ -327,7 +332,8 @@
         <span class="n">new_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">src_node</span><span class="o">.</span><span class="n">op</span><span class="p">,</span> <span class="n">parents</span><span class="o">=</span><span class="n">new_parents</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">src_node</span><span class="o">.</span><span class="n">payload</span><span class="p">)</span>
 
         <span class="n">memo</span><span class="p">[</span><span class="n">root_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_node</span><span class="o">.</span><span class="n">id</span>
-        <span class="k">return</span> <span class="n">new_node</span><span class="o">.</span><span class="n">id</span>
+        <span class="k">return</span> <span class="n">new_node</span><span class="o">.</span><span class="n">id</span></div>
+
 
 <div class="viewcode-block" id="Context.set_corr">
 <a class="viewcode-back" href="../../../api/dubious.core.html#dubious.core.Context.set_corr">[docs]</a>
