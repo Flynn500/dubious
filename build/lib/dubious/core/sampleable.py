@@ -7,30 +7,34 @@ class Sampleable():
     @abstractmethod
     def sample(self, n: int, *, rng: np.random.Generator) -> np.ndarray:
         """
-        Sample points from a distribution
-        Args:
-            n (int): Number of samples.
-            rng (np.random.Generator): Numpy random generator.
-        Returns:
-            np.ndarray: Array of sampled points.
+        Sample points from a distribution.
+
+        :param n: Number of samples.
+        :type n: int
+        :param rng: NumPy random number generator.
+        :type rng: np.random.Generator
+        :return: Array of sampled points.
+        :rtype: np.ndarray
         """
         raise NotImplementedError
     
     @abstractmethod
     def mean(self) -> float:
         """
-        Get the mean of a distribution
-        Returns:
-            float: mean
+        Get the mean of a distribution.
+
+        :return: Mean.
+        :rtype: float
         """
         raise NotImplementedError
     
     @abstractmethod
     def var(self) -> float:
         """
-        Get the variance of a distribution
-        Returns:
-            float: variance
+        Get the variance of a distribution.
+
+        :return: Variance.
+        :rtype: float
         """
         raise NotImplementedError
     
@@ -42,42 +46,52 @@ class Distribution(Sampleable):
     @abstractmethod
     def sample(self, n: int, *, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> np.ndarray:
         """
-        Sample points from a distribution
-        Args:
-            n (int): Number of samples.
-            rng (np.random.Generator): Numpy random generator.
-        Returns:
-            np.ndarray: Array of sampled points.
+        Sample points from a distribution.
+
+        :param n: Number of samples.
+        :type n: int
+        :param rng: NumPy random number generator.
+        :type rng: np.random.Generator
+        :return: Array of sampled points.
+        :rtype: np.ndarray
         """
         raise NotImplementedError
     
     @abstractmethod
     def mean(self) -> float:
         """
-        Get the mean of a distribution
-        Returns:
-            float: mean
+        Get the mean of a distribution. Defaults to monte carlo simulation if other 
+        dsitributions are used as parameters otherwise anakytic methods are used.
+
+        :return: Mean.
+        :rtype: float
         """
         raise NotImplementedError
     
     @abstractmethod
     def var(self) -> float:
         """
-        Get the variance of a distribution
-        Returns:
-            float: variance
+        Get the variance of a distribution. Defaults to monte carlo simulation if other 
+        dsitributions are used as parameters otherwise anakytic methods are used.
+
+        :return: Variance.
+        :rtype: float
         """
         raise NotImplementedError
 
     def quantile(self, q: Union[float, np.ndarray], n: int = 50000, *, method: str = "linear", rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> Union[float, np.ndarray]:
         """
-        Compute an approximation of the q-th quantile of data. 
-        Args:
-            q (float): Probabilty of quantiles to compute.
-            n (int): Number of samples.
-            rng (np.random.Generator): Numpy random generator.
-        Returns:
-            float: quantile
+        Compute an approximation of the q-th quantile of data. Defaults to monte carlo simulation if other 
+        dsitributions are used as parameters otherwise anakytic methods are used.
+
+        :param q: Probability of the quantile to compute.
+        :type q: float
+        :param n: Number of samples.
+        :type n: int
+        :param rng: NumPy random number generator.
+        :type rng: np.random.Generator
+        :return: Estimated quantile value.
+        :rtype: float
         """
         q = np.asarray(q)
 
@@ -103,14 +117,19 @@ class Distribution(Sampleable):
     
     def cdf(self, x: float, n: int = 200_000, *, rng=None, seed: Union[int, None] = None) -> float:
         """
-        Compute an approximation of the cumulative density function. 
-        Args:
-            x (float): Value.
-            n (int): Number of samples.
-            rng (np.random.Generator): Numpy random generator.
-        Returns:
-            float: quantile
+        Compute an approximation of the cumulative density function. Defaults to monte carlo simulation if other 
+        dsitributions are used as parameters otherwise anakytic methods are used. 
+        
+        :param x: Value.
+        :type q: float
+        :param x: Numer of samples.
+        :type n: int
+        :param rng: NumPy random number generator.
+        :type rng: np.random.Generator
+        :return: Estimated CDF.
+        :rtype: float
         """
+
         if rng is None:
             rng = np.random.default_rng(seed)
         

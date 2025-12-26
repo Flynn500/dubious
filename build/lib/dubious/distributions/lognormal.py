@@ -28,15 +28,6 @@ class LogNormal(Distribution):
         return rng.lognormal(mean=mu, sigma=sigma, size=n)
 
     def mean(self, n: int = 200_000, *, rng: Optional[np.random.Generator] = None,  seed: Union[int, None] = None) -> float:
-        """
-        Get the mean of a distribution
-        Args:
-            n (int): Only applies when paramaters are distributions. Number of samples used in MC aproximation.
-            rng (np.random.Generator): Random generator to use when sampling.
-            seed (int): RNG seed.
-        Returns:
-            float: mean
-        """
         if not isinstance(self.mu, Sampleable) and not isinstance(self.sigma, Sampleable):
             mu = float(self.mu)
             sigma = float(self.sigma)
@@ -52,15 +43,6 @@ class LogNormal(Distribution):
         return float(np.mean(np.exp(mu_s + 0.5 * sg_s**2)))
     
     def var(self, n: int = 200_000, *, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> float:
-        """
-        Get the variance of a distribution
-        Args:
-            n (int): Only applies when paramaters are distributions. Number of samples used in MC aproximation.
-            rng (np.random.Generator): Random generator to use when sampling.
-            seed (int): RNG seed.
-        Returns:
-            float: mean
-        """
         if not isinstance(self.mu, Sampleable) and not isinstance(self.sigma, Sampleable):
             mu = float(self.mu)
             sigma = float(self.sigma)

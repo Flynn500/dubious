@@ -34,7 +34,7 @@ class Context:
     def frozen_n(self) -> int | None:
         return self._frozen_n
 
-    def add_node(self, op: Op, parents: tuple[int, ...] = (), payload=None) -> Node:
+    def _add_node(self, op: Op, parents: tuple[int, ...] = (), payload=None) -> Node:
         node = Node(id=next(self._ids), op=op, parents=parents, payload=payload)
         self._nodes[node.id] = node
         return node
@@ -43,13 +43,15 @@ class Context:
         return self._nodes[node_id]
     
     def freeze(self, n: int = 20_000, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None):
-        if self.frozen and self.frozen_n == n: #if they call freeze with same n just return
+        if self.frozen and self.frozen_n == n:
             return
+        
+        if self._frozen and self._frozen_n != n:
+            self._frozen_samples.clear()
         
         if rng is None:
                 rng = np.random.default_rng(seed) if seed is not None else np.random.default_rng()
         
-        #self._frozen_samples.clear() should be empyu
         self._frozen = True
         self._frozen_n = n
 
@@ -69,7 +71,7 @@ class Context:
         self._frozen = False
         self._frozen_n = None
 
-    def copy_subgraph_from(self, src: "Context", root_id: int, *, memo: Optional[Dict[int, int]] = None,) -> int:
+    def _copy_subgraph_from(self, src: "Context", root_id: int, *, memo: Optional[Dict[int, int]] = None,) -> int:
         if memo is None:
             memo = {}
 
@@ -77,11 +79,40 @@ class Context:
             return memo[root_id]
 
         src_node = src.get(root_id)
-        new_parents = tuple(self.copy_subgraph_from(src, pid, memo=memo) for pid in src_node.parents)
-        new_node = self.add_node(src_node.op, parents=new_parents, payload=src_node.payload)
+        new_parents = tuple(self._copy_subgraph_from(src, pid, memo=memo) for pid in src_node.parents)
+        new_node = self._add_node(src_node.op, parents=new_parents, payload=src_node.payload)
 
         memo[root_id] = new_node.id
         return new_node.id
+
+    def _copy_corr_from(self, src: "Context", memo: dict[int, int]) -> None:
+        """
+        Copy correlation entries for any node-pairs that were copied into this context.
+        """
+        for (i, j), rho in src._corr.items():
+            ni = memo.get(i)
+            nj = memo.get(j)
+            if ni is None or nj is None:
+                continue
+            key = (ni, nj) if ni < nj else (nj, ni)
+            self._corr[key] = rho
+
+    def _copy_frozen_samples_from(self, src: "Context", memo: dict[int, int]) -> None:
+        """
+        Copy frozen samples for copied nodes. Assumes n matches.
+        """
+        for old_id, new_id in memo.items():
+            samples = src._frozen_samples.get(old_id)
+            if samples is None:
+                continue
+
+            self._frozen_samples[new_id] = samples
+        
+        for old_id in src._frozen_groups_done:
+            new_id = memo.get(old_id)
+            if new_id is not None:
+                self._frozen_groups_done.add(new_id)
+
 
     def set_corr(self, a: Union[int, Any], b: Union[int, Any], rho: float):
         """

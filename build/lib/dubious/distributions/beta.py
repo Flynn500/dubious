@@ -41,15 +41,6 @@ class Beta(Distribution):
         return rng.beta(a_arr, b_arr, size=n)
     
     def mean(self, n=200_000, *, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> float:
-        """
-        Get the mean of a distribution
-        Args:
-            n (int): Only applies when paramaters are distributions. Number of samples used in MC aproximation.
-            rng (np.random.Generator): Random generator to use when sampling.
-            seed (int): RNG seed.
-        Returns:
-            float: mean
-        """
         if not isinstance(self.alpha, Sampleable) and not isinstance(self.beta, Sampleable):
             a = float(self.alpha)
             b = float(self.beta)
@@ -65,15 +56,6 @@ class Beta(Distribution):
         return float(np.mean(a / (a + b)))
     
     def var(self, n: int = 200_000, *, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> float:
-        """
-        Get the variance of a distribution
-        Args:
-            n (int): Only applies when paramaters are distributions. Number of samples used in MC aproximation.
-            rng (np.random.Generator): Random generator to use when sampling.
-            seed (int): RNG seed.
-        Returns:
-            float: mean
-        """
         if not isinstance(self.alpha, Sampleable) and not isinstance(self.beta, Sampleable):
             a = float(self.alpha)
             b = float(self.beta)

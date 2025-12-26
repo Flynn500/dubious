@@ -31,7 +31,7 @@ class Uncertain(Sampleable):
             if dist is None:
                 raise ValueError("Distribution required.")
             
-            self._node = self._ctx.add_node(Op.LEAF, parents=(), payload=dist)
+            self._node = self._ctx._add_node(Op.LEAF, parents=(), payload=dist)
         
         self._frozen = False
         self._frozen_n: int | None = None
@@ -58,7 +58,7 @@ class Uncertain(Sampleable):
     #create uncertain objects from numbers
     @staticmethod
     def const(x: Number, ctx: Context) -> Uncertain:
-        node = ctx.add_node(Op.CONST, parents=(), payload=float(x))
+        node = ctx._add_node(Op.CONST, parents=(), payload=float(x))
         return Uncertain(ctx=ctx, _node=node)
 
     #create an Uncertain object if we recieve a number, else it already is an uncertain so return
@@ -79,6 +79,7 @@ class Uncertain(Sampleable):
                 "Create them with the same ctx=..."
             )
 
+
     @staticmethod
     def _align_contexts(a: "Uncertain", b: "Uncertain") -> tuple["Uncertain", "Uncertain"]:
         if a.ctx is b.ctx:
@@ -86,8 +87,28 @@ class Uncertain(Sampleable):
 
         merged = Context()
 
-        a_new_id = merged.copy_subgraph_from(a.ctx, a.node_id)
-        b_new_id = merged.copy_subgraph_from(b.ctx, b.node_id)
+        memo_a: dict[int, int] = {}
+        memo_b: dict[int, int] = {}
+
+        a_new_id = merged._copy_subgraph_from(a.ctx, a.node_id, memo=memo_a)
+        b_new_id = merged._copy_subgraph_from(b.ctx, b.node_id, memo=memo_b)
+
+        merged._copy_corr_from(a.ctx, memo_a)
+        merged._copy_corr_from(b.ctx, memo_b)
+
+        if a.ctx.frozen or b.ctx.frozen:
+            if a.ctx.frozen and b.ctx.frozen and (a.ctx.frozen_n != b.ctx.frozen_n):
+                raise ValueError(f"Frozen sample length mismatch. Cannot merge two frozen contexts with different sample sizes.")
+            else:
+                n = a.ctx.frozen_n if a.ctx.frozen else b.ctx.frozen_n
+
+                merged._frozen = True
+                merged._frozen_n = n
+
+                if a.ctx.frozen:
+                    merged._copy_frozen_samples_from(a.ctx, memo_a)
+                if b.ctx.frozen:
+                    merged._copy_frozen_samples_from(b.ctx, memo_b)
 
         return (
             Uncertain(ctx=merged, _node=merged.get(a_new_id)),
@@ -95,16 +116,9 @@ class Uncertain(Sampleable):
         )
 
 
+
     #statistical methods
     def sample(self, n: int, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> np.ndarray:
-        """
-        Sample points from a distribution
-        Args:
-            n (int): Number of samples.
-            rng (np.random.Generator): Numpy random generator.
-        Returns:
-            np.ndarray: Array of sampled points.
-        """
         if self._frozen_samples is not None:
             if n != self._frozen_samples.shape[0]:
                 raise ValueError(f"Frozen sample length mismatch. To change n, first unfreeze the uncertain object.")
@@ -119,33 +133,14 @@ class Uncertain(Sampleable):
         return sample_uncertain(self, session)
 
     def mean(self, n: int = 20_000, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> float:
-        """
-        Get the mean of a distribution
-        Returns:
-            float: mean
-        """
         s = self.sample(n, rng, seed=seed)
         return float(np.mean(s))
     
     def var(self, n: int = 20_000, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None):
-        """
-        Get the variance of a distribution
-        Returns:
-            float: variance
-        """
         s = self.sample(n, rng, seed=seed)
         return float(np.var(s, ddof=0))
     
     def quantile(self, q: Union[float, np.ndarray], n: int = 50_000, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None, method: str = "linear",) -> Union[float,np.ndarray]:
-        """
-        Compute an approximation of the q-th quantile of data.
-        Args:
-            q (float): Probabilty of quantiles to compute.
-            n (int): Number of samples.
-            rng (np.random.Generator): Numpy random generator.
-        Returns:
-            float: quantile
-        """
         q = np.asarray(q)
 
         if np.any((q < 0.0) | (q > 1.0)):
@@ -167,15 +162,6 @@ class Uncertain(Sampleable):
         return result.item() if result.ndim == 0 else result
     
     def cdf(self, x: float, n: int = 200_000, *, rng=None, seed: Union[int, None] = None) -> float:
-        """
-        Compute an approximation of the cumulative density function. 
-        Args:
-            x (float): Value.
-            n (int): Number of samples.
-            rng (np.random.Generator): Numpy random generator.
-        Returns:
-            float: quantile
-        """
         if rng is None:
             rng = np.random.default_rng(seed)
         
@@ -185,12 +171,14 @@ class Uncertain(Sampleable):
     def freeze(self, n: int, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None):
         """
         Freeze an uncertain object. Sample once and cache the result for all future 
-        operations until unfreeze() or freeze() with a different value of n is called.
-        Args:
-            n (int): Number of samples.
-            rng (np.random.Generator): Numpy random generator.
-        Returns:
-            np.ndarray: Array of sampled points.
+        operations until unfreeze() or freeze() is called with a different value of n.
+
+        :param n: Number of samples.
+        :type n: int
+        :param rng: NumPy random number generator.
+        :type rng: np.random.Generator
+        :return: Array of sampled points.
+        :rtype: np.ndarray
         """
         if self.frozen and self.frozen_n == n: #if they call freeze with same n just return
             return
@@ -215,11 +203,11 @@ class Uncertain(Sampleable):
         Correlate this Uncertain object with another using Gaussian Copular. 
         Both objects must be a leaf nodes, meaning they have not yet had any numerical 
         operations applied to them. 
-        Args:
-            u (Uncertain): The object with which to correlate.
-            rho (int): Gaussian copula correlation parameter.
-        Returns:
-            None
+
+        :param u: The object with which to correlate.
+        :type n: Uncertain
+        :param rho: Gaussian copula correlation parameter.
+        :type n: float
         """
         Uncertain._align_contexts(self, u)
         self._ctx.set_corr(self.node_id, u.node_id, rho)
@@ -229,11 +217,11 @@ class Uncertain(Sampleable):
     def __add__(self, other: Union["Uncertain", Number]) -> "Uncertain":
         if not isinstance(other, Uncertain):
             o = Uncertain._coerce(other, ctx=self.ctx)
-            node = self.ctx.add_node(Op.ADD, parents=(self.node_id, o.node_id))
+            node = self.ctx._add_node(Op.ADD, parents=(self.node_id, o.node_id))
             return Uncertain(ctx=self.ctx, _node=node)
         
         a, b = Uncertain._align_contexts(self, other)
-        node = a.ctx.add_node(Op.ADD, parents=(a.node_id, b.node_id))
+        node = a.ctx._add_node(Op.ADD, parents=(a.node_id, b.node_id))
         return Uncertain(ctx=a.ctx, _node=node)
 
     def __radd__(self, other: Union["Uncertain", Number]) -> "Uncertain":
@@ -242,31 +230,31 @@ class Uncertain(Sampleable):
     def __sub__(self, other: Union["Uncertain", Number]) -> "Uncertain":
         if not isinstance(other, Uncertain):
             o = Uncertain._coerce(other, ctx=self.ctx)
-            node = self.ctx.add_node(Op.SUB, parents=(self.node_id, o.node_id))
+            node = self.ctx._add_node(Op.SUB, parents=(self.node_id, o.node_id))
             return Uncertain(ctx=self.ctx, _node=node)
         
         a, b = Uncertain._align_contexts(self, other)
-        node = a.ctx.add_node(Op.SUB, parents=(a.node_id, b.node_id))
+        node = a.ctx._add_node(Op.SUB, parents=(a.node_id, b.node_id))
         return Uncertain(ctx=a.ctx, _node=node)
 
     def __rsub__(self, other: Union["Uncertain", Number]) -> "Uncertain":
         if not isinstance(other, Uncertain):
             o = Uncertain._coerce(other, ctx=self.ctx)
-            node = self.ctx.add_node(Op.SUB, parents=(o.node_id, self.node_id))
+            node = self.ctx._add_node(Op.SUB, parents=(o.node_id, self.node_id))
             return Uncertain(ctx=self.ctx, _node=node)
 
         a, b = Uncertain._align_contexts(other, self)
-        node = a.ctx.add_node(Op.SUB, parents=(a.node_id, b.node_id))
+        node = a.ctx._add_node(Op.SUB, parents=(a.node_id, b.node_id))
         return Uncertain(ctx=a.ctx, _node=node)
 
     def __mul__(self, other: Union["Uncertain", Number]) -> "Uncertain":
         if not isinstance(other, Uncertain):
             o = Uncertain._coerce(other, ctx=self.ctx)
-            node = self.ctx.add_node(Op.MUL, parents=(self.node_id, o.node_id))
+            node = self.ctx._add_node(Op.MUL, parents=(self.node_id, o.node_id))
             return Uncertain(ctx=self.ctx, _node=node)
         
         a, b = Uncertain._align_contexts(self, other)
-        node = a.ctx.add_node(Op.MUL, parents=(a.node_id, b.node_id))
+        node = a.ctx._add_node(Op.MUL, parents=(a.node_id, b.node_id))
         return Uncertain(ctx=a.ctx, _node=node)
     
     def __rmul__(self, other: Union["Uncertain", Number]) -> "Uncertain":
@@ -275,89 +263,79 @@ class Uncertain(Sampleable):
     def __truediv__(self, other: Union["Uncertain", Number]) -> "Uncertain":
         if not isinstance(other, Uncertain):
             o = Uncertain._coerce(other, ctx=self.ctx)
-            node = self.ctx.add_node(Op.DIV, parents=(self.node_id, o.node_id))
+            node = self.ctx._add_node(Op.DIV, parents=(self.node_id, o.node_id))
             return Uncertain(ctx=self.ctx, _node=node)
         
         a, b = Uncertain._align_contexts(self, other)
-        node = a.ctx.add_node(Op.DIV, parents=(a.node_id, b.node_id))
+        node = a.ctx._add_node(Op.DIV, parents=(a.node_id, b.node_id))
         return Uncertain(ctx=a.ctx, _node=node)
     
     def __rtruediv__(self, other: Union["Uncertain", Number]) -> "Uncertain":
         if not isinstance(other, Uncertain):
             o = Uncertain._coerce(other, ctx=self.ctx)
-            node = self.ctx.add_node(Op.DIV, parents=(o.node_id, self.node_id))
+            node = self.ctx._add_node(Op.DIV, parents=(o.node_id, self.node_id))
             return Uncertain(ctx=self.ctx, _node=node)
 
         a, b = Uncertain._align_contexts(other, self)
-        node = a.ctx.add_node(Op.DIV, parents=(a.node_id, b.node_id))
+        node = a.ctx._add_node(Op.DIV, parents=(a.node_id, b.node_id))
         return Uncertain(ctx=a.ctx, _node=node)
     
     def __neg__(self) -> "Uncertain":
-        node = self.ctx.add_node(Op.NEG, parents=(self.node_id,))
+        node = self.ctx._add_node(Op.NEG, parents=(self.node_id,))
         return Uncertain(ctx=self.ctx, _node=node)
 
     def __pow__(self, power: Union["Uncertain", Number]) -> "Uncertain":
         if not isinstance(power, Uncertain):
             p = Uncertain._coerce(power, ctx=self.ctx)
-            node = self.ctx.add_node(Op.POW, parents=(self.node_id, p.node_id))
+            node = self.ctx._add_node(Op.POW, parents=(self.node_id, p.node_id))
             return Uncertain(ctx=self.ctx, _node=node)
         
         a, b = Uncertain._align_contexts(self, power)
-        node = a.ctx.add_node(Op.POW, parents=(a.node_id, b.node_id))
+        node = a.ctx._add_node(Op.POW, parents=(a.node_id, b.node_id))
         return Uncertain(ctx=a.ctx, _node=node)
 
     def __rpow__(self, other: Union["Uncertain", Number]) -> "Uncertain":
         if not isinstance(other, Uncertain):
             o = Uncertain._coerce(other, ctx=self.ctx)
-            node = self.ctx.add_node(Op.POW, parents=(o.node_id, self.node_id))
+            node = self.ctx._add_node(Op.POW, parents=(o.node_id, self.node_id))
             return Uncertain(ctx=self.ctx, _node=node)
         
         a, b = Uncertain._align_contexts(other, self)
-        node = a.ctx.add_node(Op.POW, parents=(a.node_id, b.node_id))
+        node = a.ctx._add_node(Op.POW, parents=(a.node_id, b.node_id))
         return Uncertain(ctx=a.ctx, _node=node)
     
     #custom numerical operations
     def log(self, base: float | None = None) -> "Uncertain":
         payload = None if base is None else float(base)
-        node = self.ctx.add_node(Op.LOG, parents=(self.node_id,), payload=payload)
+        node = self.ctx._add_node(Op.LOG, parents=(self.node_id,), payload=payload)
         return Uncertain(ctx=self.ctx, _node=node)
     
     def sin(self) -> "Uncertain":
-        node = self.ctx.add_node(Op.SIN, parents=(self.node_id,))
+        node = self.ctx._add_node(Op.SIN, parents=(self.node_id,))
         return Uncertain(ctx=self.ctx, _node=node)
 
     def cos(self) -> "Uncertain":
-        node = self.ctx.add_node(Op.COS, parents=(self.node_id,))
+        node = self.ctx._add_node(Op.COS, parents=(self.node_id,))
         return Uncertain(ctx=self.ctx, _node=node)
 
     def tan(self) -> "Uncertain":
-        node = self.ctx.add_node(Op.TAN, parents=(self.node_id,))
+        node = self.ctx._add_node(Op.TAN, parents=(self.node_id,))
         return Uncertain(ctx=self.ctx, _node=node)
     
     def asin(self) -> "Uncertain":
-        node = self.ctx.add_node(Op.ASIN, parents=(self.node_id,))
+        node = self.ctx._add_node(Op.ASIN, parents=(self.node_id,))
         return Uncertain(ctx=self.ctx, _node=node)
     
     def acos(self) -> "Uncertain":
-        node = self.ctx.add_node(Op.ACOS, parents=(self.node_id,))
+        node = self.ctx._add_node(Op.ACOS, parents=(self.node_id,))
         return Uncertain(ctx=self.ctx, _node=node)
 
     def atan(self) -> "Uncertain":
-        node = self.ctx.add_node(Op.ATAN, parents=(self.node_id,))
+        node = self.ctx._add_node(Op.ATAN, parents=(self.node_id,))
         return Uncertain(ctx=self.ctx, _node=node)
     
 
 def sample_uncertain(u: Uncertain, session: SampleSession) -> np.ndarray:
-    """
-    Sample points from a composite distribution.
-        Args:
-            u (Uncertain) Uncertain object to sample.
-            n (int): Number of samples.
-            rng (np.random.Generator): Numpy random generator.
-    Returns:
-        np.ndarray: Array of sampled points.
-    """
-
     ctx = u.ctx
 
     #Frozen caching helpers

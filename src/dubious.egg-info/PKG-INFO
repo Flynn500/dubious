@@ -50,7 +50,7 @@ print(f"variance: {x.var()} mean: {x.mean()} q(0.05): {x.quantile(0.05)}")
 Rounded output: variance: 19.9, mean: 15, q(0.05): 7.7
 
 ---
-The key idea behind Dubious is lazy uncertainty propagation. We don't calculate approximations and lose information at each step, instead we build a graph of operations applied to uncertain values that we traverse upon sampling. You can construct complex expressions from uncertain inputs in a simple and readable manner, and evaluate the result using Monte Carlo simulations.
+The core idea behind Dubious is lazy uncertainty propagation. We don't calculate approximations at each step, instead we build a graph of operations applied to uncertain values, and traverse it upon sampling. You can construct complex expressions from uncertain inputs in a simple and readable manner, and evaluate the result using Monte Carlo simulations.
 
 By default, distributions are assumed to be independent. We can correlate two uncertain objects using `a.corr(b,rho)`, implemented via Gaussian copula (see notes for details). 
 
@@ -75,8 +75,12 @@ Currently supporting Normal, LogNormal, Beta and Uniform distributions. Distribu
 `Uncertain()`:
 Uncertain objects are the wrapper for distributions that allow them to be used like numeric values. Alongside being able to perform numeric operations on these uncertain objects, they support the same properties as standard distributions (mean, variance, sampling and quantile). You can apply the exact same operations on these objects you might apply to real data, and easily calculate the propagated uncertainty that comes from using several unreliable input values.
 
+To ensure the same output after repeated calls, Uncertain objects support `freeze()` and `unfreeze()`, although this only freezes a signel Uncertain object. It is recommended to instead freeze the entire context for deterministic results.
+
 `Context()`:
 Context objects own the graph through which we manage the uncertainty propagation. You can add uncertain objects from different contexts, although this is slightly less performant than first creating a context object, and then creating all new uncertain objects with ctx =  _Your context object_.
+
+Context objects also support `freeze()` and `unfreeze()`, it is recommended to freeze results through context objects. If you are allowing Uncertain objects to create their own contexts try `my_uncertain_object.ctx.freeze()` to freeze the entire graph.
 
 ---
 ### Some examples:
@@ -158,11 +162,15 @@ Correlated uncertainty propagation currently matches a Gaussian-copula reference
 ## 0.3
 ### Added
 - Added correlation via Gaussian Copula
-- Changed import structure. Instead of everything living in the default name space, we have core, distributions and umath.
-- Benchmarks and additional tests
+- Added `freeze()` and `unfreeze()` functions to uncertain and context objects. They will ensure the same set of samples is used for all function calls while frozen. Context freezing is recommended in most cases as it freezes every random node in the graph as well as constants. Freezing uncertain objects individually will lead to semi-random behaviour that isn't as useful in most cases.
+- Benchmarks and additional testing
+- Documentation now on https://dubious.readthedocs.io/
+
+### Changed
+- Changed import structure. Instead of everything living in the main name space, we have core, distributions and umath.
+- Seeds defaulted to 0 which meant that everything was deterministic by default. We now default as random and only when a seed or rng object is provided are outputs deterministic.
   
 ### Fixed
-- Seeds defaulted to 0 which meant that everything was deterministic by default. We now default as random and only when a seed or rng object is provided are outputs deterministic.
 
 ## 0.2
 ### Added
@@ -184,5 +192,5 @@ Distribution objects
 - Uniform
 - Beta
 - Support for using distribution objects as params
-Uncertain objects
+- Uncertain objects
 - Standard arithmetic through dunder methods

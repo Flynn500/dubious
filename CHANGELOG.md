@@ -3,6 +3,7 @@
 - Added correlation via Gaussian Copula
 - Added `freeze()` and `unfreeze()` functions to uncertain and context objects. They will ensure the same set of samples is used for all function calls while frozen. Context freezing is recommended in most cases as it freezes every random node in the graph as well as constants. Freezing uncertain objects individually will lead to semi-random behaviour that isn't as useful in most cases.
 - Benchmarks and additional testing
+- Documentation now on https://dubious.readthedocs.io/
 
 ### Changed
 - Changed import structure. Instead of everything living in the main name space, we have core, distributions and umath.
