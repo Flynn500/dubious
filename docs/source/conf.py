@@ -37,7 +37,6 @@ autodoc_default_options = {
     "show-inheritance": True,
     "private-members": False,
     "special-members": False, 
-    "exclude-members": "add_node,copy_subgraph_from,Node,Op,SampleSession,Sampleable,Distribution,sample_uncertain"
 }
 
 autodoc_typehints = "description"
