@@ -14,7 +14,7 @@ print(f"variance: {x.var()} mean: {x.mean()} q(0.05): {x.quantile(0.05)}")
 Rounded output: variance: 19.9, mean: 15, q(0.05): 7.7
 
 ---
-The key idea behind Dubious is lazy uncertainty propagation. We don't calculate approximations and lose information at each step, instead we build a graph of operations applied to uncertain values that we traverse upon sampling. You can construct complex expressions from uncertain inputs in a simple and readable manner, and evaluate the result using Monte Carlo simulations.
+The core idea behind Dubious is lazy uncertainty propagation. We don't calculate approximations at each step, instead we build a graph of operations applied to uncertain values, and traverse it upon sampling. You can construct complex expressions from uncertain inputs in a simple and readable manner, and evaluate the result using Monte Carlo simulations.
 
 By default, distributions are assumed to be independent. We can correlate two uncertain objects using `a.corr(b,rho)`, implemented via Gaussian copula (see notes for details). 
 
@@ -39,8 +39,12 @@ Currently supporting Normal, LogNormal, Beta and Uniform distributions. Distribu
 `Uncertain()`:
 Uncertain objects are the wrapper for distributions that allow them to be used like numeric values. Alongside being able to perform numeric operations on these uncertain objects, they support the same properties as standard distributions (mean, variance, sampling and quantile). You can apply the exact same operations on these objects you might apply to real data, and easily calculate the propagated uncertainty that comes from using several unreliable input values.
 
+To ensure the same output after repeated calls, Uncertain objects support `freeze()` and `unfreeze()`, although this only freezes a signel Uncertain object. It is recommended to instead freeze the entire context for deterministic results.
+
 `Context()`:
 Context objects own the graph through which we manage the uncertainty propagation. You can add uncertain objects from different contexts, although this is slightly less performant than first creating a context object, and then creating all new uncertain objects with ctx =  _Your context object_.
+
+Context objects also support `freeze()` and `unfreeze()`, it is recommended to freeze results through context objects. If you are allowing Uncertain objects to create their own contexts try `my_uncertain_object.ctx.freeze()` to freeze the entire graph.
 
 ---
 ### Some examples:
