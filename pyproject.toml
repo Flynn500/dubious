@@ -17,6 +17,12 @@ dependencies = [
 ]
 dynamic = ["readme"]
 
+[project.optional-dependencies]
+test = [
+    "pytest>=7",
+    "scipy>=1.10",
+]
+
 [tool.setuptools.dynamic]
 readme = {file = ["README.md", "CHANGELOG.md"], content-type = "text/markdown"}
 

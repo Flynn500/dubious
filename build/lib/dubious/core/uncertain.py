@@ -84,7 +84,7 @@ class Uncertain(Sampleable):
 
 
     #statistical methods
-    def sample(self, n: int, rng: Optional[np.random.Generator] = None, seed: int = 0) -> np.ndarray:
+    def sample(self, n: int, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> np.ndarray:
         """
         Sample points from a distribution
         Args:
@@ -94,13 +94,13 @@ class Uncertain(Sampleable):
             np.ndarray: Array of sampled points.
         """
         if rng is None:
-            rng = np.random.default_rng(seed)
+            rng = np.random.default_rng(seed) if seed is not None else np.random.default_rng()
         
         from .sample_session import SampleSession #hacky avoiding
         session = SampleSession(n, rng)
         return sample_uncertain(self, session)
 
-    def mean(self, n: int = 20_000, rng: Optional[np.random.Generator] = None, seed: int = 0) -> float:
+    def mean(self, n: int = 20_000, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> float:
         """
         Get the mean of a distribution
         Returns:
@@ -109,7 +109,7 @@ class Uncertain(Sampleable):
         s = self.sample(n, rng, seed=seed)
         return float(np.mean(s))
     
-    def var(self, n: int = 20_000, rng: Optional[np.random.Generator] = None, seed: int = 0):
+    def var(self, n: int = 20_000, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None):
         """
         Get the variance of a distribution
         Returns:
@@ -118,7 +118,7 @@ class Uncertain(Sampleable):
         s = self.sample(n, rng, seed=seed)
         return float(np.var(s, ddof=0))
     
-    def quantile(self, q: Union[float, np.ndarray], n: int = 50_000, rng: Optional[np.random.Generator] = None, seed: int = 0, method: str = "linear",) -> Union[float,np.ndarray]:
+    def quantile(self, q: Union[float, np.ndarray], n: int = 50_000, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None, method: str = "linear",) -> Union[float,np.ndarray]:
         """
         Compute an approximation of the q-th quantile of data.
         Args:
@@ -149,7 +149,7 @@ class Uncertain(Sampleable):
         return result.item() if result.ndim == 0 else result
 
     
-    def cdf(self, x: float, n: int = 200_000, *, rng=None, seed: int = 0) -> float:
+    def cdf(self, x: float, n: int = 200_000, *, rng=None, seed: Union[int, None] = None) -> float:
         """
         Compute an approximation of the cumulative density function. 
         Args:
@@ -167,6 +167,16 @@ class Uncertain(Sampleable):
     
     #correlation
     def corr(self, u: "Uncertain", rho: float):
+        """
+        Correlate this Uncertain object with another using Gaussian Copular. 
+        Both objects must be a leaf nodes, meaning they have not yet had any numerical 
+        operations applied to them. 
+        Args:
+            u (Uncertain): The object with which to correlate.
+            rho (int): Gaussian copula correlation parameter.
+        Returns:
+            None
+        """
         Uncertain._align_contexts(self, u)
         self._ctx.set_corr(self.node_id, u.node_id, rho)
 

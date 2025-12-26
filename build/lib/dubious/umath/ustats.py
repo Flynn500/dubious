@@ -1,6 +1,11 @@
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+"""
+This file should not import any core modules. Stats modules should be strictly dealing with ndarrays
+conversions should happen in the core modules if needed.
+"""
+
 def erf(x: ArrayLike) -> NDArray[np.float64]:
     x_f: NDArray[np.float64] = np.asarray(x, dtype=np.float64)
     p  = 0.3275911
@@ -17,7 +22,6 @@ def erf(x: ArrayLike) -> NDArray[np.float64]:
 
     poly: NDArray[np.float64] = (((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t)
 
-    # Write as (-ax * ax) instead of -(ax * ax) to placate some type stubs
     y: NDArray[np.float64] = 1.0 - poly * np.exp((-ax) * ax)
 
     return sign * y

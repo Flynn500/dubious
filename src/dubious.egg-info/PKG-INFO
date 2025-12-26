@@ -29,6 +29,9 @@ Requires-Python: >=3.9
 Description-Content-Type: text/markdown
 License-File: LICENSE
 Requires-Dist: numpy>=1.23
+Provides-Extra: test
+Requires-Dist: pytest>=7; extra == "test"
+Requires-Dist: scipy>=1.10; extra == "test"
 Dynamic: license-file
 
 # Dubious

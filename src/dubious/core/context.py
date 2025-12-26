@@ -1,6 +1,6 @@
 from __future__ import annotations
 import itertools
-from typing import Dict, Optional, TYPE_CHECKING, Union, Any
+from typing import Dict, Optional, Union, Any
 from .node import Node, Op
 
 class Context:

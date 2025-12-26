@@ -22,9 +22,9 @@ class Normal(Distribution):
         self.mu = mu
         self.sigma = sigma
 
-    def sample(self, n: int, *, rng: Optional[np.random.Generator] = None, seed: int = 0) -> np.ndarray:
+    def sample(self, n: int, *, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> np.ndarray:
         if rng is None:
-            rng = np.random.default_rng(seed)
+            rng = np.random.default_rng(seed) if seed is not None else np.random.default_rng()
 
         if isinstance(self.mu, Sampleable):
             mu = self.mu.sample(n, rng=rng)
@@ -66,9 +66,9 @@ class Uniform(Distribution):
         self.low = low
         self.high = high
 
-    def sample(self, n: int, *, rng: Optional[np.random.Generator] = None, seed: int = 0) -> np.ndarray:
+    def sample(self, n: int, *, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> np.ndarray:
         if rng is None:
-            rng = np.random.default_rng(seed)
+            rng = np.random.default_rng(seed) if seed is not None else np.random.default_rng()
         
         if isinstance(self.high, Sampleable):
             high = self.high.sample(n, rng=rng)
@@ -106,9 +106,9 @@ class LogNormal(Distribution):
         self.mu = mu
         self.sigma = sigma
 
-    def sample(self, n: int, *, rng: Optional[np.random.Generator] = None, seed: int = 0) -> np.ndarray:
+    def sample(self, n: int, *, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> np.ndarray:
         if rng is None:
-            rng = np.random.default_rng(seed)
+            rng = np.random.default_rng(seed) if seed is not None else np.random.default_rng()
 
         mu = self.mu.sample(n, rng=rng) if isinstance(self.mu, Sampleable) else self.mu
         sigma = self.sigma.sample(n, rng=rng) if isinstance(self.sigma, Sampleable) else self.sigma
@@ -119,7 +119,7 @@ class LogNormal(Distribution):
 
         return rng.lognormal(mean=mu, sigma=sigma, size=n)
 
-    def mean(self, n: int = 200_000, *, rng: Optional[np.random.Generator] = None,  seed: int = 0) -> float:
+    def mean(self, n: int = 200_000, *, rng: Optional[np.random.Generator] = None,  seed: Union[int, None] = None) -> float:
         """
         Get the mean of a distribution
         Args:
@@ -135,7 +135,7 @@ class LogNormal(Distribution):
             return float(np.exp(mu + 0.5 * sigma**2))
 
         if rng is None:
-            rng = np.random.default_rng(seed)
+            rng = np.random.default_rng(seed) if seed is not None else np.random.default_rng()
 
         mu_s = self.mu.sample(n, rng=rng) if isinstance(self.mu, Sampleable) else np.full(n, self.mu)
         sg_s = self.sigma.sample(n, rng=rng) if isinstance(self.sigma, Sampleable) else np.full(n, self.sigma)
@@ -143,7 +143,7 @@ class LogNormal(Distribution):
         sg_s = np.clip(sg_s, 1e-6, None)
         return float(np.mean(np.exp(mu_s + 0.5 * sg_s**2)))
     
-    def var(self, n: int = 200_000, *, rng: Optional[np.random.Generator] = None, seed: int = 0) -> float:
+    def var(self, n: int = 200_000, *, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> float:
         """
         Get the variance of a distribution
         Args:
@@ -159,7 +159,7 @@ class LogNormal(Distribution):
             return float((np.exp(sigma**2) - 1.0) * np.exp(2.0 * mu + sigma**2))
 
         if rng is None:
-            rng = np.random.default_rng(seed)
+            rng = np.random.default_rng(seed) if seed is not None else np.random.default_rng()
 
         mu_s = self.mu.sample(n, rng=rng) if isinstance(self.mu, Sampleable) else np.full(n, self.mu)
         sg_s = self.sigma.sample(n, rng=rng) if isinstance(self.sigma, Sampleable) else np.full(n, self.sigma)
@@ -181,9 +181,9 @@ class Beta(Distribution):
         self.alpha = alpha
         self.beta = beta
 
-    def sample(self, n: int, *, rng: Optional[np.random.Generator] = None, seed: int = 0) -> np.ndarray:
+    def sample(self, n: int, *, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> np.ndarray:
         if rng is None:
-            rng = np.random.default_rng(seed)
+            rng = np.random.default_rng(seed) if seed is not None else np.random.default_rng()
 
         if isinstance(self.alpha, Sampleable):
             a = self.alpha.sample(n, rng=rng)
@@ -206,7 +206,7 @@ class Beta(Distribution):
 
         return rng.beta(a_arr, b_arr, size=n)
     
-    def mean(self, n=200_000, *, rng: Optional[np.random.Generator] = None, seed: int = 0) -> float:
+    def mean(self, n=200_000, *, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> float:
         """
         Get the mean of a distribution
         Args:
@@ -222,7 +222,7 @@ class Beta(Distribution):
             return a / (a + b)
 
         if rng is None:
-            rng = np.random.default_rng(seed)
+            rng = np.random.default_rng(seed) if seed is not None else np.random.default_rng()
         
         a = self.alpha.sample(n, rng=rng) if isinstance(self.alpha, Sampleable) else float(self.alpha)
         b = self.beta.sample(n, rng=rng) if isinstance(self.beta, Sampleable) else float(self.beta)
@@ -230,7 +230,7 @@ class Beta(Distribution):
         b = np.clip(np.asarray(b), 1e-6, None)
         return float(np.mean(a / (a + b)))
     
-    def var(self, n: int = 200_000, *, rng: Optional[np.random.Generator] = None, seed: int = 0) -> float:
+    def var(self, n: int = 200_000, *, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> float:
         """
         Get the variance of a distribution
         Args:
@@ -247,7 +247,7 @@ class Beta(Distribution):
             return (a * b) / denom
         
         if rng is None:
-            rng = np.random.default_rng(seed)
+            rng = np.random.default_rng(seed) if seed is not None else np.random.default_rng()
 
         a = self.alpha.sample(n, rng=rng) if isinstance(self.alpha, Sampleable) else float(self.alpha)
         b = self.beta.sample(n, rng=rng) if isinstance(self.beta, Sampleable) else float(self.beta)

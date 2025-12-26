@@ -35,12 +35,12 @@ class Sampleable():
         raise NotImplementedError
     
     @abstractmethod
-    def quantile(self, q: float, n: int = 50000, *, rng: Optional[np.random.Generator] = None, method: str = "linear", seed: int = 0) -> float:
+    def quantile(self, q: float, n: int = 50000, *, rng: Optional[np.random.Generator] = None, method: str = "linear", seed: Union[int, None] = None) -> float:
         raise NotImplementedError
 
 class Distribution(Sampleable):
     @abstractmethod
-    def sample(self, n: int, *, rng: Optional[np.random.Generator] = None, seed: int = 0) -> np.ndarray:
+    def sample(self, n: int, *, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> np.ndarray:
         """
         Sample points from a distribution
         Args:
@@ -69,7 +69,7 @@ class Distribution(Sampleable):
         """
         raise NotImplementedError
 
-    def quantile(self, q: Union[float, np.ndarray], n: int = 50000, *, method: str = "linear", rng: Optional[np.random.Generator] = None, seed: int = 0) -> Union[float, np.ndarray]:
+    def quantile(self, q: Union[float, np.ndarray], n: int = 50000, *, method: str = "linear", rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> Union[float, np.ndarray]:
         """
         Compute an approximation of the q-th quantile of data. 
         Args:
@@ -101,7 +101,7 @@ class Distribution(Sampleable):
         result = np.quantile(s, q, method=method_lit)
         return result.item() if result.ndim == 0 else result
     
-    def cdf(self, x: float, n: int = 200_000, *, rng=None, seed: int = 0) -> float:
+    def cdf(self, x: float, n: int = 200_000, *, rng=None, seed: Union[int, None] = None) -> float:
         """
         Compute an approximation of the cumulative density function. 
         Args:
