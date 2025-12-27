@@ -40,6 +40,35 @@ class Sampleable():
     
     @abstractmethod
     def quantile(self, q: float, n: int = 50000, *, rng: Optional[np.random.Generator] = None, method: str = "linear", seed: Union[int, None] = None) -> float:
+        """
+        Compute an approximation of the q-th quantile of data. Defaults to monte carlo simulation if other 
+        dsitributions are used as parameters otherwise analytic methods are used.
+
+        :param q: Probability of the quantile to compute.
+        :type q: float
+        :param n: Number of samples.
+        :type n: int
+        :param rng: NumPy random number generator.
+        :type rng: np.random.Generator
+        :return: Estimated quantile value.
+        :rtype: float
+        """
+        raise NotImplementedError
+    @abstractmethod
+    def cdf(self, x: float, n: int = 200_000, *, rng=None, seed: Union[int, None] = None) -> float:
+        """
+        Compute an approximation of the cumulative density function. Defaults to monte carlo simulation if other 
+        distributions are used as parameters otherwise analytic methods are used. 
+        
+        :param x: Value.
+        :type q: float
+        :param x: Numer of samples.
+        :type n: int
+        :param rng: NumPy random number generator.
+        :type rng: np.random.Generator
+        :return: Estimated CDF.
+        :rtype: float
+        """
         raise NotImplementedError
 
 class Distribution(Sampleable):
@@ -61,7 +90,7 @@ class Distribution(Sampleable):
     def mean(self) -> float:
         """
         Get the mean of a distribution. Defaults to monte carlo simulation if other 
-        dsitributions are used as parameters otherwise anakytic methods are used.
+        dsitributions are used as parameters otherwise analytic methods are used.
 
         :return: Mean.
         :rtype: float
@@ -72,7 +101,7 @@ class Distribution(Sampleable):
     def var(self) -> float:
         """
         Get the variance of a distribution. Defaults to monte carlo simulation if other 
-        dsitributions are used as parameters otherwise anakytic methods are used.
+        dsitributions are used as parameters otherwise analytic methods are used.
 
         :return: Variance.
         :rtype: float
@@ -82,7 +111,7 @@ class Distribution(Sampleable):
     def quantile(self, q: Union[float, np.ndarray], n: int = 50000, *, method: str = "linear", rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> Union[float, np.ndarray]:
         """
         Compute an approximation of the q-th quantile of data. Defaults to monte carlo simulation if other 
-        dsitributions are used as parameters otherwise anakytic methods are used.
+        distributions are used as parameters otherwise analytic methods are used.
 
         :param q: Probability of the quantile to compute.
         :type q: float
@@ -118,7 +147,7 @@ class Distribution(Sampleable):
     def cdf(self, x: float, n: int = 200_000, *, rng=None, seed: Union[int, None] = None) -> float:
         """
         Compute an approximation of the cumulative density function. Defaults to monte carlo simulation if other 
-        dsitributions are used as parameters otherwise anakytic methods are used. 
+        dsitributions are used as parameters otherwise analytic methods are used. 
         
         :param x: Value.
         :type q: float

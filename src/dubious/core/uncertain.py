@@ -173,6 +173,9 @@ class Uncertain(Sampleable):
         Freeze an uncertain object. Sample once and cache the result for all future 
         operations until unfreeze() or freeze() is called with a different value of n.
 
+        This will only freeze a single uncertain object within the context. Context.Freeze()
+        is recommended in most cases.
+
         :param n: Number of samples.
         :type n: int
         :param rng: NumPy random number generator.
@@ -203,6 +206,10 @@ class Uncertain(Sampleable):
         Correlate this Uncertain object with another using Gaussian Copular. 
         Both objects must be a leaf nodes, meaning they have not yet had any numerical 
         operations applied to them. 
+
+        Dubious uses Gaussian copula (rank/latent-normal dependence). rho is not Pearson 
+        correlation and the realized linear correlation can differ. Validate by 
+        sampling if a specific dependence measure matters.
 
         :param u: The object with which to correlate.
         :type n: Uncertain

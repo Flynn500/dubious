@@ -1,5 +1,3 @@
-`← Back to Home <index.html>`_
-
 .. include:: ../../README.md
    :parser: myst_parser.sphinx_
 
