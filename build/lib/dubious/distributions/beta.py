@@ -4,7 +4,7 @@ from typing import Union, Optional
 import numbers
 
 from ..core.sampleable import Sampleable, Distribution
-
+from ..core.sampler import Sampler
 
 class Beta(Distribution):
     def __init__(self, alpha: Union[float, Sampleable] = 1.0, beta: Union[float, Sampleable] = 1.0):
@@ -15,17 +15,16 @@ class Beta(Distribution):
         self.alpha = alpha
         self.beta = beta
 
-    def sample(self, n: int, *, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> np.ndarray:
-        if rng is None:
-            rng = np.random.default_rng(seed) if seed is not None else np.random.default_rng()
+    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> np.ndarray:
+        sampler = Sampler()
 
         if isinstance(self.alpha, Sampleable):
-            a = self.alpha.sample(n, rng=rng)
+            a = self.alpha.sample(n, sampler=sampler)
         else:
             a = self.alpha
 
         if isinstance(self.beta, Sampleable):
-            b = self.beta.sample(n, rng=rng)
+            b = self.beta.sample(n, sampler=sampler)
         else:
             b = self.beta
         
@@ -38,35 +37,29 @@ class Beta(Distribution):
             a_arr = np.clip(a_arr, a_min=1e-6, a_max=None)
             b_arr = np.clip(b_arr, a_min=1e-6, a_max=None)
 
-        return rng.beta(a_arr, b_arr, size=n)
+        return sampler.beta(a_arr, b_arr, size=n)
     
-    def mean(self, n=200_000, *, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> float:
+    def mean(self, n=200_000, *, sampler: Optional[Sampler] = None) -> float:
         if not isinstance(self.alpha, Sampleable) and not isinstance(self.beta, Sampleable):
             a = float(self.alpha)
             b = float(self.beta)
             return a / (a + b)
-
-        if rng is None:
-            rng = np.random.default_rng(seed) if seed is not None else np.random.default_rng()
         
-        a = self.alpha.sample(n, rng=rng) if isinstance(self.alpha, Sampleable) else float(self.alpha)
-        b = self.beta.sample(n, rng=rng) if isinstance(self.beta, Sampleable) else float(self.beta)
+        a = self.alpha.sample(n, sampler=sampler) if isinstance(self.alpha, Sampleable) else float(self.alpha)
+        b = self.beta.sample(n, sampler=sampler) if isinstance(self.beta, Sampleable) else float(self.beta)
         a = np.clip(np.asarray(a), 1e-6, None)
         b = np.clip(np.asarray(b), 1e-6, None)
         return float(np.mean(a / (a + b)))
     
-    def var(self, n: int = 200_000, *, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> float:
+    def var(self, n: int = 200_000, *, sampler: Optional[Sampler] = None) -> float:
         if not isinstance(self.alpha, Sampleable) and not isinstance(self.beta, Sampleable):
             a = float(self.alpha)
             b = float(self.beta)
             denom = (a + b) ** 2 * (a + b + 1.0)
             return (a * b) / denom
-        
-        if rng is None:
-            rng = np.random.default_rng(seed) if seed is not None else np.random.default_rng()
 
-        a = self.alpha.sample(n, rng=rng) if isinstance(self.alpha, Sampleable) else float(self.alpha)
-        b = self.beta.sample(n, rng=rng) if isinstance(self.beta, Sampleable) else float(self.beta)
+        a = self.alpha.sample(n, sampler=sampler) if isinstance(self.alpha, Sampleable) else float(self.alpha)
+        b = self.beta.sample(n, sampler=sampler) if isinstance(self.beta, Sampleable) else float(self.beta)
         a = np.clip(np.asarray(a), 1e-6, None)
         b = np.clip(np.asarray(b), 1e-6, None)
 

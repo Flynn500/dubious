@@ -1,13 +1,14 @@
 import numpy as np
 from dataclasses import dataclass, field
 from typing import Dict, Any, Callable, Optional, List, Tuple, Set
+from .sampler import Sampler
 
 from.context import Context
 from ..umath.ustats import erf
 @dataclass
 class SampleSession:
     n: int
-    rng: np.random.Generator
+    sampler: Sampler
     cache: Dict[int, np.ndarray] = field(default_factory=dict)
 
     group_samplers: Dict[Any, Callable[["SampleSession"], None]] = field(default_factory=dict)
@@ -94,7 +95,7 @@ class SampleSession:
             if leaf_ids[0] in session.cache:
                 return
 
-            eps = session.rng.standard_normal(size=(k, session.n))
+            eps = session.sampler.standard_normal(size=(k, session.n))
             Z = L @ eps
 
             inv_sqrt2 = 1.0 / np.sqrt(2.0)

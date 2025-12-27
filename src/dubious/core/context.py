@@ -21,6 +21,7 @@ class Context:
         self._frozen_n = None
         self._frozen_samples: dict[int, np.ndarray] = {}
         self._frozen_groups_done: set[int] = set()
+        self.draw_idx = 0
     
     @property
     def nodes(self) -> Dict[int, Node]:

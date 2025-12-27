@@ -1,5 +1,3 @@
-# benchmarks/bench_sales_accuracy.py
-
 import numpy as np
 from dubious.distributions import Beta, LogNormal
 from dubious.core import Uncertain, Context
@@ -13,8 +11,8 @@ def gaussian_copula_reference_beta_lognorm(a, b, mu, sigma, r, n, rng):
     u1 = norm.cdf(z1)
     u2 = norm.cdf(z2)
 
-    x = sp_beta.ppf(u1, a, b)                         # vectorized
-    y = sp_lognorm.ppf(u2, s=sigma, scale=np.exp(mu)) # vectorized
+    x = sp_beta.ppf(u1, a, b)
+    y = sp_lognorm.ppf(u2, s=sigma, scale=np.exp(mu))
     return x, y
 
 def run():

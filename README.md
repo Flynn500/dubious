@@ -18,7 +18,9 @@ The core idea behind Dubious is lazy uncertainty propagation. We don't calculate
 
 By default, distributions are assumed to be independent. We can correlate two uncertain objects using `a.corr(b,rho)`, implemented via Gaussian copula (see notes for details). 
 
-After applying any numerical operations to `Uncertain` objects, sampling and evaluation only occur when calling a function like `mean()`, `quantile()` or `sample()` is called. 
+After applying any numerical operations to `Uncertain` objects, sampling and evaluation only occur when calling a function like `mean()`, `quantile()` or `sample()` is called.
+
+Full documentation can be found at: https://dubious.readthedocs.io/en/latest/api/modules.html
 
 ### Installation
 With python v3.9+ `pip install dubious`
@@ -29,12 +31,12 @@ If several instances of the same `Uncertain` object are involved in an operation
 
 Correlation between Uncertain objects is currently implemented using Gaussian Copula. This rank based correlation and the rho value used to correlate different objects is NOT the same as the pearson coefficient. 
 
-Numpy RNG objects do not need to be provided by default, but they can be optionally provided for any function that generates its result using MC sampling methods, you can alternatively just provide a seed.
+RNG can be controlled via `Sampler()` objects, these can be constructed using either a seed, or a `numpy.random.Generator()` object and passed into any function that uses MC sampling methods.
 
 
 ### Classes
 `Distribution()`:
-Currently supporting Normal, LogNormal, Beta and Uniform distributions. Distribution objects also support using other distribution objects for their parameters, although this may lead to unexpected behaviour in cases where parameters can become negative. For each you distribution can get `mean()`, `var()`, `quantile` and `sample()`.
+Currently supporting Normal, LogNormal, Beta and Uniform distributions. Distribution objects also support using other distribution objects for their parameters, although this may lead to unexpected behaviour in cases where parameters can become negative. For each you distribution can get `mean()`, `var()`, `quantile`, `cdf()` and `sample()`.
 
 `Uncertain()`:
 Uncertain objects are the wrapper for distributions that allow them to be used like numeric values. Alongside being able to perform numeric operations on these uncertain objects, they support the same properties as standard distributions (mean, variance, sampling and quantile). You can apply the exact same operations on these objects you might apply to real data, and easily calculate the propagated uncertainty that comes from using several unreliable input values.

@@ -21,6 +21,7 @@ class Context:
         self._frozen_n = None
         self._frozen_samples: dict[int, np.ndarray] = {}
         self._frozen_groups_done: set[int] = set()
+        self.draw_idx = 0
     
     @property
     def nodes(self) -> Dict[int, Node]:
@@ -43,6 +44,17 @@ class Context:
         return self._nodes[node_id]
     
     def freeze(self, n: int = 20_000, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None):
+        """
+        Freeze the context. Sample once and cache the result for all future 
+        operations until unfreeze() or freeze() is called with a different value of n.
+
+        :param n: Number of samples.
+        :type n: int
+        :param rng: NumPy random number generator.
+        :type rng: np.random.Generator
+        :return: Array of sampled points.
+        :rtype: np.ndarray
+        """
         if self.frozen and self.frozen_n == n:
             return
         
@@ -67,6 +79,9 @@ class Context:
             self._frozen_samples[node_id] = samples
 
     def unfreeze(self):
+        """
+        Unfreeze the context, clearing the cache of all uncertain objects.
+        """
         self._frozen_samples.clear()
         self._frozen = False
         self._frozen_n = None
@@ -117,6 +132,10 @@ class Context:
     def set_corr(self, a: Union[int, Any], b: Union[int, Any], rho: float):
         """
         Sets correlation between to uncertain leaf nodes using gaussian copular.
+
+        Dubious uses Gaussian copula (rank/latent-normal dependence). rho is not Pearson 
+        correlation and the realized linear correlation can differ. Validate by 
+        sampling if a specific dependence measure matters.
         """
         a = getattr(a, "node_id", a)
         b = getattr(b, "node_id", b)

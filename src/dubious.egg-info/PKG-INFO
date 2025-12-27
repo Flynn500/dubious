@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: dubious
-Version: 0.2.0
+Version: 0.3.0
 Summary: Dubious is a Python library for propagating uncertainty through numerical computations
 Author-email: Flynn500 <flynnwilson101@gmail.com>
 License: MIT License
@@ -54,7 +54,9 @@ The core idea behind Dubious is lazy uncertainty propagation. We don't calculate
 
 By default, distributions are assumed to be independent. We can correlate two uncertain objects using `a.corr(b,rho)`, implemented via Gaussian copula (see notes for details). 
 
-After applying any numerical operations to `Uncertain` objects, sampling and evaluation only occur when calling a function like `mean()`, `quantile()` or `sample()` is called. 
+After applying any numerical operations to `Uncertain` objects, sampling and evaluation only occur when calling a function like `mean()`, `quantile()` or `sample()` is called.
+
+Full documentation can be found at: https://dubious.readthedocs.io/en/latest/api/modules.html
 
 ### Installation
 With python v3.9+ `pip install dubious`
@@ -70,7 +72,7 @@ Numpy RNG objects do not need to be provided by default, but they can be optiona
 
 ### Classes
 `Distribution()`:
-Currently supporting Normal, LogNormal, Beta and Uniform distributions. Distribution objects also support using other distribution objects for their parameters, although this may lead to unexpected behaviour in cases where parameters can become negative. For each you distribution can get `mean()`, `var()`, `quantile` and `sample()`.
+Currently supporting Normal, LogNormal, Beta and Uniform distributions. Distribution objects also support using other distribution objects for their parameters, although this may lead to unexpected behaviour in cases where parameters can become negative. For each you distribution can get `mean()`, `var()`, `quantile`, `cdf()` and `sample()`.
 
 `Uncertain()`:
 Uncertain objects are the wrapper for distributions that allow them to be used like numeric values. Alongside being able to perform numeric operations on these uncertain objects, they support the same properties as standard distributions (mean, variance, sampling and quantile). You can apply the exact same operations on these objects you might apply to real data, and easily calculate the propagated uncertainty that comes from using several unreliable input values.

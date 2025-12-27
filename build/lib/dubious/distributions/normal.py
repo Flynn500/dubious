@@ -4,6 +4,7 @@ from typing import Union, Optional
 import numbers
 
 from ..core.sampleable import Sampleable, Distribution
+from ..core.sampler import Sampler
 from .dist_helpers import _mean, _var
 
 class Normal(Distribution):
@@ -13,24 +14,24 @@ class Normal(Distribution):
         self.mu = mu
         self.sigma = sigma
 
-    def sample(self, n: int, *, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> np.ndarray:
-        if rng is None:
-            rng = np.random.default_rng(seed) if seed is not None else np.random.default_rng()
+    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> np.ndarray:
+        if sampler is None:
+            sampler = Sampler()
 
         if isinstance(self.mu, Sampleable):
-            mu = self.mu.sample(n, rng=rng)
+            mu = self.mu.sample(n, sampler=sampler)
         else:
             mu = self.mu
 
         if isinstance(self.sigma, Sampleable):
-            sigma = self.sigma.sample(n, rng=rng) 
+            sigma = self.sigma.sample(n, sampler=sampler) 
         else:
             sigma = self.sigma
         
         if np.any(sigma <= 0):
             warnings.warn("Warning: Sigma <= 0 found, clamped to 1e-6.")
             sigma = np.clip(sigma, a_min=1e-6, a_max=None)
-        return rng.normal(loc=mu, scale=sigma, size=n)
+        return sampler.normal(loc=mu, scale=sigma, size=n)
 
     def mean(self) -> float:
         return _mean(self.mu)

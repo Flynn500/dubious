@@ -13,6 +13,7 @@ src/dubious/core/context.py
 src/dubious/core/node.py
 src/dubious/core/sample_session.py
 src/dubious/core/sampleable.py
+src/dubious/core/sampler.py
 src/dubious/core/uncertain.py
 src/dubious/distributions/__init__.py
 src/dubious/distributions/beta.py

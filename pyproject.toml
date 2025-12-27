@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dubious"
-version = "0.2.0"
+version = "0.3.0"
 description = "Dubious is a Python library for propagating uncertainty through numerical computations"
 authors = [
   { name="Flynn500", email="flynnwilson101@gmail.com" },

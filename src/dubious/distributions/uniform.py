@@ -4,6 +4,7 @@ from typing import Union, Optional
 import numbers
 
 from ..core.sampleable import Sampleable, Distribution
+from ..core.sampler import Sampler
 from .dist_helpers import _is_scalar_real, _mean, _var
 
 class Uniform(Distribution):
@@ -14,20 +15,20 @@ class Uniform(Distribution):
         self.low = low
         self.high = high
 
-    def sample(self, n: int, *, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None) -> np.ndarray:
-        if rng is None:
-            rng = np.random.default_rng(seed) if seed is not None else np.random.default_rng()
-        
+    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> np.ndarray:
+        if sampler is None:
+            sampler = Sampler()
+
         if isinstance(self.high, Sampleable):
-            high = self.high.sample(n, rng=rng)
+            high = self.high.sample(n, sampler=sampler)
         else:
             high = self.high
 
         if isinstance(self.low, Sampleable):
-            low = self.low.sample(n, rng=rng) 
+            low = self.low.sample(n, sampler=sampler) 
         else:
             low = self.low
-        return rng.uniform(low=low, high=high, size=n)
+        return sampler.uniform(low=low, high=high, size=n)
 
     def mean(self) -> float:
         if isinstance(self.high, Sampleable): h = self.high.mean() 
