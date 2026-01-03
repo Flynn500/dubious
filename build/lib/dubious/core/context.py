@@ -4,6 +4,7 @@ from typing import Dict, Optional, Union, Any
 import numpy as np
 
 from .node import Node, Op
+from .sampler import Sampler
 
 
 class Context:
@@ -43,7 +44,10 @@ class Context:
     def get(self, node_id: int) -> Node:
         return self._nodes[node_id]
     
-    def freeze(self, n: int = 20_000, rng: Optional[np.random.Generator] = None, seed: Union[int, None] = None):
+    def redraw(self):
+        self.draw_idx += 1
+    
+    def freeze(self, n, *,sampler: Optional[Sampler] = None):
         """
         Freeze the context. Sample once and cache the result for all future 
         operations until unfreeze() or freeze() is called with a different value of n.
@@ -61,8 +65,8 @@ class Context:
         if self._frozen and self._frozen_n != n:
             self._frozen_samples.clear()
         
-        if rng is None:
-                rng = np.random.default_rng(seed) if seed is not None else np.random.default_rng()
+        if sampler is None:
+                sampler = Sampler()
         
         self._frozen = True
         self._frozen_n = n
@@ -71,7 +75,7 @@ class Context:
             if node.op == Op.LEAF:
                 if node.payload == None:
                     raise RuntimeError("LEAF node has no payload.")
-                samples = node.payload.sample(n, rng=rng)
+                samples = node.payload.sample(n, sampler=sampler)
             elif node.op == Op.CONST:
                 samples = np.full(n, node.payload)
 
