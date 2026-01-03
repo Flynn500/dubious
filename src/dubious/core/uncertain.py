@@ -193,6 +193,12 @@ class Uncertain(Sampleable):
         drawn. The same draw value will be returned, until redraw is called on the context,
         this uncertain object, or any other uncertain object within the same context.
 
+        calling `float()` on an uncertain object is the same as calling `draw()`. This 
+        can be used to artificially run monte carlo simulations on external functions
+        that aren't supported by dubious. By repeatedly passing in the uncertain object, and 
+        calling redraw you will get random results from the distribution. Alternitvely, 
+        if your function supports vectorized inputs, call `sample()` and pass in the result.
+
         :param sampler: Dubious Sampler object.
         :type sampler: Sampler
         :return: Randomly drawn float.
@@ -280,6 +286,10 @@ class Uncertain(Sampleable):
         """
         Uncertain._align_contexts(self, u)
         self._ctx.set_corr(self.node_id, u.node_id, rho)
+
+    #float conversion
+    def __float__(self):
+        return self.draw()
 
 
     #our arithmatic operations

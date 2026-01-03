@@ -188,9 +188,15 @@ class Uncertain(Sampleable):
     
     def draw(self, *, sampler: Optional[Sampler] = None) -> float:
         """
-        Draw a random value from an uncertain distribution.
+        Draw a random value from an uncertain distribution. If the context is frozen,
+        cycle through the values in the current frozen cache, else random values are
+        drawn. The same draw value will be returned, until redraw is called on the context,
+        this uncertain object, or any other uncertain object within the same context.
 
-        check this logic this is fuzzy as fak, im too cooked right now to be doing this shit.
+        :param sampler: Dubious Sampler object.
+        :type sampler: Sampler
+        :return: Randomly drawn float.
+        :rtype: float
         """
         if sampler is None:
             sampler = Sampler()
@@ -214,6 +220,11 @@ class Uncertain(Sampleable):
     def redraw(self, *, sampler: Optional[Sampler] = None):
         """
         Redraw for this node and any others within its context.
+
+        :param sampler: Dubious Sampler object.
+        :type sampler: Sampler
+        :return: Randomly drawn float.
+        :rtype: float
         """
         self.ctx.redraw()
         return self.draw(sampler=sampler)
@@ -229,8 +240,8 @@ class Uncertain(Sampleable):
 
         :param n: Number of samples.
         :type n: int
-        :param rng: NumPy random number generator.
-        :type rng: np.random.Generator
+        :param sampler: Dubious Sampler object.
+        :type sampler: Sampler
         :return: Array of sampled points.
         :rtype: np.ndarray
         """
@@ -269,6 +280,10 @@ class Uncertain(Sampleable):
         """
         Uncertain._align_contexts(self, u)
         self._ctx.set_corr(self.node_id, u.node_id, rho)
+
+    #float conversion
+    def __float__(self):
+        return self.draw()
 
 
     #our arithmatic operations
