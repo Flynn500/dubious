@@ -2,7 +2,6 @@ import numpy as np
 from abc import abstractmethod
 from typing import Union, Optional, cast, Literal
 from math import sqrt
-
 from .sampler import Sampler
 
 class Sampleable():

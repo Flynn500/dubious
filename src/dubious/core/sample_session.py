@@ -4,7 +4,7 @@ from typing import Dict, Any, Callable, Optional, List, Tuple, Set
 from .sampler import Sampler
 
 from.context import Context
-from ..umath.ustats import erf
+from ..umath.stats import erf
 @dataclass
 class SampleSession:
     n: int

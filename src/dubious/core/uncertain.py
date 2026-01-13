@@ -196,7 +196,7 @@ class Uncertain(Sampleable):
         calling `float()` on an uncertain object is the same as calling `draw()`. This 
         can be used to artificially run monte carlo simulations on external functions
         that aren't supported by dubious. By repeatedly passing in the uncertain object, and 
-        calling redraw you will get random results from the distribution. Alternitvely, 
+        calling redraw you will get random results from the distribution. Alternatively, 
         if your function supports vectorized inputs, call `sample()` and pass in the result.
 
         :param sampler: Dubious Sampler object.
@@ -266,8 +266,7 @@ class Uncertain(Sampleable):
         self._frozen = False
         self._frozen_n = None
         self._frozen_samples = None
-
-        
+     
     #correlation
     def corr(self, u: "Uncertain", rho: float):
         """
@@ -290,7 +289,6 @@ class Uncertain(Sampleable):
     #float conversion
     def __float__(self):
         return self.draw()
-
 
     #our arithmatic operations
     def __add__(self, other: Union["Uncertain", Number]) -> "Uncertain":

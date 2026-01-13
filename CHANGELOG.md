@@ -1,3 +1,7 @@
+## 0.4
+### Added
+### Changed
+When frozen, dmonte carlo methods will default to the value of n the node / context was frozen at. Previously the different defaults for mean var etc. would error unless n was specified manually to be the value of n frozen with.
 ## 0.3
 ### Added
 - Added correlation via Gaussian Copula

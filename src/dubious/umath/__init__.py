@@ -1,4 +1,4 @@
-from .umath import log, sin, cos, tan, asin, acos, atan
+from .ops import log, sin, cos, tan, asin, acos, atan
 
 __all__ = [
     "log",
