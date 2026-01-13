@@ -14,7 +14,7 @@ print(f"variance: {x.var()} mean: {x.mean()} q(0.05): {x.quantile(0.05)}")
 Rounded output: variance: 19.9, mean: 15, q(0.05): 7.7
 
 ---
-The core idea behind Dubious is lazy uncertainty propagation. We don't calculate approximations at each step, instead we build a graph of operations applied to uncertain values, and traverse it upon sampling. You can construct complex expressions from uncertain inputs in a simple and readable manner, and evaluate the result using Monte Carlo simulations.
+The core idea behind Dubious is lazy uncertainty propagation. We build a graph of operations applied to uncertain values, and traverse it upon sampling. You can construct complex expressions from uncertain inputs in a simple and readable manner, and evaluate the result using Monte Carlo simulations.
 
 By default, distributions are assumed to be independent. We can correlate two uncertain objects using `a.corr(b,rho)`, implemented via Gaussian copula (see notes for details). 
 
@@ -31,7 +31,7 @@ If several instances of the same `Uncertain` object are involved in an operation
 
 Correlation between Uncertain objects is currently implemented using Gaussian Copula. This rank based correlation and the rho value used to correlate different objects is NOT the same as the pearson coefficient. 
 
-RNG can be controlled via `Sampler()` objects, these can be constructed using either a seed, or a `numpy.random.Generator()` object and passed into any function that uses MC sampling methods.
+RNG can be controlled via `Sampler()` objects, these can be constructed using either a seed, or a `substratum.Generator()` object and passed into any function that uses MC sampling methods.
 
 
 ### Classes
