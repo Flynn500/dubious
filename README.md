@@ -14,7 +14,7 @@ print(f"variance: {x.var()} mean: {x.mean()} q(0.05): {x.quantile(0.05)}")
 Rounded output: variance: 19.9, mean: 15, q(0.05): 7.7
 
 ---
-The core idea behind Dubious is lazy uncertainty propagation. We don't calculate approximations at each step, instead we build a graph of operations applied to uncertain values, and traverse it upon sampling. You can construct complex expressions from uncertain inputs in a simple and readable manner, and evaluate the result using Monte Carlo simulations.
+The core idea behind Dubious is lazy uncertainty propagation. We build a graph of operations applied to uncertain values, and traverse it upon sampling. You can construct complex expressions from uncertain inputs in a simple and readable manner, and evaluate the result using Monte Carlo simulations.
 
 By default, distributions are assumed to be independent. We can correlate two uncertain objects using `a.corr(b,rho)`, implemented via Gaussian copula (see notes for details). 
 
