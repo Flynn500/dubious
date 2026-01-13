@@ -1,5 +1,5 @@
 import warnings
-import numpy as np
+import substratum as ss
 from typing import Union, Optional
 import numbers
 
@@ -14,7 +14,7 @@ class Normal(Distribution):
         self.mu = mu
         self.sigma = sigma
 
-    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> np.ndarray:
+    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> ss.Array:
         if sampler is None:
             sampler = Sampler()
 
@@ -24,14 +24,20 @@ class Normal(Distribution):
             mu = self.mu
 
         if isinstance(self.sigma, Sampleable):
-            sigma = self.sigma.sample(n, sampler=sampler) 
+            sigma = self.sigma.sample(n, sampler=sampler)
         else:
             sigma = self.sigma
-        
-        if np.any(sigma <= 0):
+
+        # Check for invalid sigma values
+        if isinstance(sigma, ss.Array):
+            if any(val <= 0 for val in sigma):
+                warnings.warn("Warning: Sigma <= 0 found, clamped to 1e-6.")
+                sigma = sigma.clip(1e-6, 1e308)
+        elif sigma <= 0:
             warnings.warn("Warning: Sigma <= 0 found, clamped to 1e-6.")
-            sigma = np.clip(sigma, a_min=1e-6, a_max=None)
-        return sampler.normal(loc=mu, scale=sigma, size=n)
+            sigma = 1e-6
+
+        return sampler.normal(loc=mu, scale=sigma, size=[n])
 
     def mean(self) -> float:
         return _mean(self.mu)

@@ -1,4 +1,4 @@
-import numpy as np
+import substratum as ss
 from typing import Union
 import numbers
 from ..core.sampleable import Sampleable
@@ -11,10 +11,4 @@ def _var(x: Union[float, Sampleable]) -> float:
     return x.var() if isinstance(x, Sampleable) else 0.0
 
 def _is_scalar_real(x: object) -> bool:
-    return isinstance(x, numbers.Real) and not isinstance(x, np.ndarray)
-
-
-
-
-
-
+    return isinstance(x, numbers.Real) and not isinstance(x, ss.Array)

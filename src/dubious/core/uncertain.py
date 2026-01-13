@@ -1,8 +1,8 @@
 from __future__ import annotations
-import numpy as np
-from typing import Any, Optional, Union, Literal, cast, TYPE_CHECKING
+import substratum as ss
+import math
+from typing import Optional, Union, TYPE_CHECKING
 import warnings
-import copy
 
 from .node import Node, Op
 from .context import Context
@@ -11,7 +11,7 @@ from .sampler import Sampler
 if TYPE_CHECKING:
     from .sample_session import SampleSession
 
-Number = Union[int, float, np.number]
+Number = Union[int, float]
 
 
 class Uncertain(Sampleable):
@@ -26,19 +26,19 @@ class Uncertain(Sampleable):
         if _node is not None:
             if ctx is None:
                 raise ValueError("ctx must be provided when constructing from an existing _node.")
-            
+
             self._node = _node
 
         else:
             if dist is None:
                 raise ValueError("Distribution required.")
-            
+
             self._node = self._ctx._add_node(Op.LEAF, parents=(), payload=dist)
-        
+
         self._frozen = False
         self._frozen_n: int | None = None
-        self._frozen_samples: np.ndarray | None = None
-    
+        self._frozen_samples: ss.Array | None = None
+
     @property
     def node_id(self): return self._node.id
 
@@ -48,7 +48,7 @@ class Uncertain(Sampleable):
     @property
     def ctx(self) -> Context:
         return self._ctx
-    
+
     @property
     def frozen(self) -> bool:
         return self._frozen
@@ -68,7 +68,7 @@ class Uncertain(Sampleable):
     def _coerce(other: Union[Uncertain, Number], ctx: Context) -> Uncertain:
         return other if isinstance(other, Uncertain) else Uncertain.const(other, ctx=ctx)
 
-    
+
     @staticmethod
     def _ensure_same_ctx(a: "Uncertain", b: "Uncertain"):
         """
@@ -119,15 +119,15 @@ class Uncertain(Sampleable):
 
 
     #statistical methods
-    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> np.ndarray:
+    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> ss.Array:
         if self._frozen_samples is not None:
-            if n != self._frozen_samples.shape[0]:
+            if n != len(self._frozen_samples):
                 raise ValueError(f"Frozen sample length mismatch. To change n, first unfreeze the uncertain object.")
             return self._frozen_samples
-  
+
         if sampler is None:
             sampler = Sampler()
-        
+
         from .sample_session import SampleSession
         session = SampleSession(n, sampler=sampler)
 
@@ -140,8 +140,8 @@ class Uncertain(Sampleable):
             n = self.ctx.frozen_n
 
         s = self.sample(n, sampler=sampler)
-        return float(np.mean(s))
-    
+        return s.mean()
+
     def var(self, n: int = 20_000, sampler: Optional[Sampler] = None):
         if self.frozen and self.frozen_n:
             n = self.frozen_n
@@ -149,43 +149,30 @@ class Uncertain(Sampleable):
             n = self.ctx.frozen_n
 
         s = self.sample(n, sampler=sampler)
-        return float(np.var(s, ddof=0))
-    
-    def quantile(self, q: Union[float, np.ndarray], n: int = 50_000, *, sampler: Optional[Sampler] = None, method: str = "linear",) -> Union[float,np.ndarray]:
+        return s.var()
+
+    def quantile(self, q: float, n: int = 50_000, *, sampler: Optional[Sampler] = None) -> float:
         if self.frozen and self.frozen_n:
             n = self.frozen_n
         if self.ctx.frozen and self.ctx.frozen_n:
             n = self.ctx.frozen_n
-        
-        q = np.asarray(q)
 
-        if np.any((q < 0.0) | (q > 1.0)):
+        if q < 0.0 or q > 1.0:
             raise ValueError("q must be between 0 and 1")
-        
-        s = self.sample(n, sampler=sampler)
 
-        #cast to avoid numpy getting mad
-        method_lit = cast(
-            Literal[
-                "inverted_cdf", "averaged_inverted_cdf",
-                "closest_observation", "interpolated_inverted_cdf",
-                "hazen", "weibull", "linear", "median_unbiased",
-                "normal_unbiased"
-            ],
-            method,
-        )
-        result = np.quantile(s, q, method=method_lit)
-        return result.item() if result.ndim == 0 else result
-    
+        s = self.sample(n, sampler=sampler)
+        return s.quantile(q)
+
     def cdf(self, x: float, n: int = 200_000, *, sampler: Optional[Sampler] = None) -> float:
         if self.frozen and self.frozen_n:
             n = self.frozen_n
         if self.ctx.frozen and self.ctx.frozen_n:
             n = self.ctx.frozen_n
-        
+
         s = self.sample(n, sampler=sampler)
-        return float(np.mean(s <= x))
-    
+        count = sum(1 for val in s if val <= x)
+        return count / len(s)
+
     def draw(self, *, sampler: Optional[Sampler] = None) -> float:
         """
         Draw a random value from an uncertain distribution. If the context is frozen,
@@ -193,10 +180,10 @@ class Uncertain(Sampleable):
         drawn. The same draw value will be returned, until redraw is called on the context,
         this uncertain object, or any other uncertain object within the same context.
 
-        calling `float()` on an uncertain object is the same as calling `draw()`. This 
+        calling `float()` on an uncertain object is the same as calling `draw()`. This
         can be used to artificially run monte carlo simulations on external functions
-        that aren't supported by dubious. By repeatedly passing in the uncertain object, and 
-        calling redraw you will get random results from the distribution. Alternatively, 
+        that aren't supported by dubious. By repeatedly passing in the uncertain object, and
+        calling redraw you will get random results from the distribution. Alternatively,
         if your function supports vectorized inputs, call `sample()` and pass in the result.
 
         :param sampler: Dubious Sampler object.
@@ -206,23 +193,23 @@ class Uncertain(Sampleable):
         """
         if sampler is None:
             sampler = Sampler()
-        
+
         from .sample_session import SampleSession
-        session = SampleSession(1, sampler=sampler)
+        session = SampleSession(n=1, sampler=sampler)
         idx = None
         if self.frozen:
             assert self.frozen_n is not None
             idx = self.ctx.draw_idx % self.frozen_n
-            if self._frozen_samples == None or self._frozen_samples.size == 0:
+            if self._frozen_samples is None or len(self._frozen_samples) == 0:
                 self.sample(self.frozen_n)
         if self.ctx.frozen:
             assert self.ctx.frozen_n is not None
             idx = self.ctx.draw_idx % self.ctx.frozen_n
-            if self.ctx._frozen_samples == None or len(self.ctx._frozen_samples) == 0:
+            if self.ctx._frozen_samples is None or len(self.ctx._frozen_samples) == 0:
                 self.sample(self.ctx.frozen_n)
 
-        return draw_uncertain(self, session=session, draw_idx=idx).item()
-        
+        return float(draw_uncertain(self, session=session, draw_idx=idx))
+
     def redraw(self, *, sampler: Optional[Sampler] = None):
         """
         Redraw for this node and any others within its context.
@@ -235,10 +222,10 @@ class Uncertain(Sampleable):
         self.ctx.redraw()
         return self.draw(sampler=sampler)
 
-    
+
     def freeze(self, n: int, *, sampler: Optional[Sampler] = None):
         """
-        Freeze an uncertain object. Sample once and cache the result for all future 
+        Freeze an uncertain object. Sample once and cache the result for all future
         operations until unfreeze() or freeze() is called with a different value of n.
 
         This will only freeze a single uncertain object within the context. Context.Freeze()
@@ -248,17 +235,14 @@ class Uncertain(Sampleable):
         :type n: int
         :param sampler: Dubious Sampler object.
         :type sampler: Sampler
-        :return: Array of sampled points.
-        :rtype: np.ndarray
         """
         if self.frozen and self.frozen_n == n: #if they call freeze with same n just return
             return
         samples = self.sample(n, sampler=sampler)
-        samples.setflags(write=False)
         self._frozen_samples = samples
         self._frozen = True
         self._frozen_n = n
-    
+
     def unfreeze(self):
         """
         Unfreeze an uncertain object, clearing it's cache.
@@ -266,16 +250,16 @@ class Uncertain(Sampleable):
         self._frozen = False
         self._frozen_n = None
         self._frozen_samples = None
-     
+
     #correlation
     def corr(self, u: "Uncertain", rho: float):
         """
-        Correlate this Uncertain object with another using Gaussian Copular. 
-        Both objects must be a leaf nodes, meaning they have not yet had any numerical 
-        operations applied to them. 
+        Correlate this Uncertain object with another using Gaussian Copular.
+        Both objects must be a leaf nodes, meaning they have not yet had any numerical
+        operations applied to them.
 
-        Dubious uses Gaussian copula (rank/latent-normal dependence). rho is not Pearson 
-        correlation and the realized linear correlation can differ. Validate by 
+        Dubious uses Gaussian copula (rank/latent-normal dependence). rho is not Pearson
+        correlation and the realized linear correlation can differ. Validate by
         sampling if a specific dependence measure matters.
 
         :param u: The object with which to correlate.
@@ -296,7 +280,7 @@ class Uncertain(Sampleable):
             o = Uncertain._coerce(other, ctx=self.ctx)
             node = self.ctx._add_node(Op.ADD, parents=(self.node_id, o.node_id))
             return Uncertain(ctx=self.ctx, _node=node)
-        
+
         a, b = Uncertain._align_contexts(self, other)
         node = a.ctx._add_node(Op.ADD, parents=(a.node_id, b.node_id))
         return Uncertain(ctx=a.ctx, _node=node)
@@ -309,7 +293,7 @@ class Uncertain(Sampleable):
             o = Uncertain._coerce(other, ctx=self.ctx)
             node = self.ctx._add_node(Op.SUB, parents=(self.node_id, o.node_id))
             return Uncertain(ctx=self.ctx, _node=node)
-        
+
         a, b = Uncertain._align_contexts(self, other)
         node = a.ctx._add_node(Op.SUB, parents=(a.node_id, b.node_id))
         return Uncertain(ctx=a.ctx, _node=node)
@@ -329,11 +313,11 @@ class Uncertain(Sampleable):
             o = Uncertain._coerce(other, ctx=self.ctx)
             node = self.ctx._add_node(Op.MUL, parents=(self.node_id, o.node_id))
             return Uncertain(ctx=self.ctx, _node=node)
-        
+
         a, b = Uncertain._align_contexts(self, other)
         node = a.ctx._add_node(Op.MUL, parents=(a.node_id, b.node_id))
         return Uncertain(ctx=a.ctx, _node=node)
-    
+
     def __rmul__(self, other: Union["Uncertain", Number]) -> "Uncertain":
         return self.__mul__(other)
 
@@ -342,11 +326,11 @@ class Uncertain(Sampleable):
             o = Uncertain._coerce(other, ctx=self.ctx)
             node = self.ctx._add_node(Op.DIV, parents=(self.node_id, o.node_id))
             return Uncertain(ctx=self.ctx, _node=node)
-        
+
         a, b = Uncertain._align_contexts(self, other)
         node = a.ctx._add_node(Op.DIV, parents=(a.node_id, b.node_id))
         return Uncertain(ctx=a.ctx, _node=node)
-    
+
     def __rtruediv__(self, other: Union["Uncertain", Number]) -> "Uncertain":
         if not isinstance(other, Uncertain):
             o = Uncertain._coerce(other, ctx=self.ctx)
@@ -356,7 +340,7 @@ class Uncertain(Sampleable):
         a, b = Uncertain._align_contexts(other, self)
         node = a.ctx._add_node(Op.DIV, parents=(a.node_id, b.node_id))
         return Uncertain(ctx=a.ctx, _node=node)
-    
+
     def __neg__(self) -> "Uncertain":
         node = self.ctx._add_node(Op.NEG, parents=(self.node_id,))
         return Uncertain(ctx=self.ctx, _node=node)
@@ -366,7 +350,7 @@ class Uncertain(Sampleable):
             p = Uncertain._coerce(power, ctx=self.ctx)
             node = self.ctx._add_node(Op.POW, parents=(self.node_id, p.node_id))
             return Uncertain(ctx=self.ctx, _node=node)
-        
+
         a, b = Uncertain._align_contexts(self, power)
         node = a.ctx._add_node(Op.POW, parents=(a.node_id, b.node_id))
         return Uncertain(ctx=a.ctx, _node=node)
@@ -376,17 +360,17 @@ class Uncertain(Sampleable):
             o = Uncertain._coerce(other, ctx=self.ctx)
             node = self.ctx._add_node(Op.POW, parents=(o.node_id, self.node_id))
             return Uncertain(ctx=self.ctx, _node=node)
-        
+
         a, b = Uncertain._align_contexts(other, self)
         node = a.ctx._add_node(Op.POW, parents=(a.node_id, b.node_id))
         return Uncertain(ctx=a.ctx, _node=node)
-    
+
     #custom numerical operations
     def log(self, base: float | None = None) -> "Uncertain":
         payload = None if base is None else float(base)
         node = self.ctx._add_node(Op.LOG, parents=(self.node_id,), payload=payload)
         return Uncertain(ctx=self.ctx, _node=node)
-    
+
     def sin(self) -> "Uncertain":
         node = self.ctx._add_node(Op.SIN, parents=(self.node_id,))
         return Uncertain(ctx=self.ctx, _node=node)
@@ -398,11 +382,11 @@ class Uncertain(Sampleable):
     def tan(self) -> "Uncertain":
         node = self.ctx._add_node(Op.TAN, parents=(self.node_id,))
         return Uncertain(ctx=self.ctx, _node=node)
-    
+
     def asin(self) -> "Uncertain":
         node = self.ctx._add_node(Op.ASIN, parents=(self.node_id,))
         return Uncertain(ctx=self.ctx, _node=node)
-    
+
     def acos(self) -> "Uncertain":
         node = self.ctx._add_node(Op.ACOS, parents=(self.node_id,))
         return Uncertain(ctx=self.ctx, _node=node)
@@ -410,55 +394,57 @@ class Uncertain(Sampleable):
     def atan(self) -> "Uncertain":
         node = self.ctx._add_node(Op.ATAN, parents=(self.node_id,))
         return Uncertain(ctx=self.ctx, _node=node)
-    
 
-def eval_op(node, a, b=None):
+
+def eval_op(node: Node, a: ss.Array, b: Optional[ss.Array] = None) -> ss.Array:
     if node.op == Op.ADD:
-        result = a + b
+        result = a + b # type: ignore
     elif node.op == Op.SUB:
-        result = a - b
+        result = a - b # type: ignore
     elif node.op == Op.MUL:
-        result = a * b
+        result = a * b # type: ignore
     elif node.op == Op.DIV:
-        result = a / b
+        result = a / b # type: ignore
     elif node.op == Op.NEG:
         result = -a
     elif node.op == Op.POW:
-        result = a ** b
+        result = a ** b # type: ignore
     elif node.op == Op.LOG:
         x = a
-        if np.any(x <= 0):
+        # Check if any values are <= 0
+        if any(val <= 0 for val in x):
             warnings.warn("Warning: Log domain <= 0 found, clamped to 1e-6.")
-            x = np.clip(x, a_min=1e-6, a_max=None)
+            x = x.clip(1e-6, 1e308)
 
         if node.payload is None:
-            result = np.log(x)
+            result = x.log()
         else:
             base = float(node.payload)
             if base <= 0 or base == 1.0:
                 raise ValueError("log() base must be > 0 and != 1.")
-            result = np.log(x) / np.log(base)
+            result = x.log() / math.log(base)
     elif node.op == Op.SIN:
-        result = np.sin(a)
+        result = a.sin()
     elif node.op == Op.COS:
-        result = np.cos(a)
+        result = a.cos()
     elif node.op == Op.TAN:
-        result = np.tan(a)
+        result = a.tan()
     elif node.op == Op.ASIN:
-        result = np.arcsin(a)
+        result = a.arcsin()
     elif node.op == Op.ACOS:
-        result = np.arccos(a)
+        result = a.arccos()
     elif node.op == Op.ATAN:
-        result = np.arctan(a)
+        result = a.arctan()
     else:
         raise ValueError(f"Unsupported op {node.op}")
     return result
 
-def sample_uncertain(u: Uncertain, session: SampleSession) -> np.ndarray:
+
+def sample_uncertain(u: Uncertain, session: "SampleSession") -> ss.Array:
     ctx = u.ctx
     ctx_frozen = ctx.frozen
 
-    def _ctx_frozen_get(node_id: int) -> np.ndarray | None:
+    def _ctx_frozen_get(node_id: int) -> ss.Array | None:
         if not ctx_frozen:
             return None
         if ctx.frozen_n is None:
@@ -471,15 +457,14 @@ def sample_uncertain(u: Uncertain, session: SampleSession) -> np.ndarray:
             )
         return ctx._frozen_samples.get(node_id)
 
-    def _ctx_frozen_put(node_id: int, samples: np.ndarray) -> None:
-        samples.setflags(write=False)
+    def _ctx_frozen_put(node_id: int, samples: ss.Array) -> None:
         ctx._frozen_samples[node_id] = samples
-    
+
     #recursive eval function
-    def eval_node(node_id: int) -> np.ndarray:
+    def eval_node(node_id: int) -> ss.Array:
         if node_id in session.cache:
             return session.cache[node_id]
-        
+
         frozen_hit = _ctx_frozen_get(node_id)
         if frozen_hit is not None:
             session.cache[node_id] = frozen_hit
@@ -487,10 +472,10 @@ def sample_uncertain(u: Uncertain, session: SampleSession) -> np.ndarray:
 
         node = ctx.get(node_id)
 
-        if node.op == Op.LEAF:                
+        if node.op == Op.LEAF:
             if node.payload is None:
                 raise RuntimeError("LEAF node has no payload.")
-            
+
             if not session.correlation_prepared:
                 session.prepare_correlation(ctx)
 
@@ -502,10 +487,10 @@ def sample_uncertain(u: Uncertain, session: SampleSession) -> np.ndarray:
 
                     if frozen_hit is None:
                         raise RuntimeError("Frozen correlated group marked done, but node not found in frozen cache.")
-                    
+
                     session.cache[node_id] = frozen_hit
                     return frozen_hit
-        
+
                 session.group_samplers[group_id](session)
 
                 if ctx_frozen:
@@ -513,7 +498,7 @@ def sample_uncertain(u: Uncertain, session: SampleSession) -> np.ndarray:
                         if gid == group_id and leaf_id in session.cache:
                             _ctx_frozen_put(leaf_id, session.cache[leaf_id])
                     ctx._frozen_groups_done.add(group_id)
-                     
+
                 return session.cache[node_id]
 
             result = node.payload.sample(session.n, sampler=session.sampler)
@@ -522,7 +507,7 @@ def sample_uncertain(u: Uncertain, session: SampleSession) -> np.ndarray:
                 _ctx_frozen_put(node_id, result)
 
         elif node.op == Op.CONST:
-            result = np.full(session.n, node.payload)
+            result = ss.full([session.n], float(node.payload)) # type: ignore
 
             if ctx_frozen:
                 _ctx_frozen_put(node_id, result)
@@ -540,7 +525,7 @@ def sample_uncertain(u: Uncertain, session: SampleSession) -> np.ndarray:
     return eval_node(u.node_id)
 
 
-def draw_uncertain(u: Uncertain, session: SampleSession, draw_idx: int | None = None) -> np.ndarray:
+def draw_uncertain(u: Uncertain, session: "SampleSession", draw_idx: int | None = None) -> float:
     ctx = u.ctx
     ctx_frozen = ctx.frozen
 
@@ -552,15 +537,15 @@ def draw_uncertain(u: Uncertain, session: SampleSession, draw_idx: int | None = 
         if not (0 <= draw_idx < ctx.frozen_n):
             raise IndexError(f"draw_idx={draw_idx} out of range for frozen_n={ctx.frozen_n}.")
 
-    def _ctx_frozen_draw(node_id: int) -> np.ndarray | None:
+    def _ctx_frozen_draw(node_id: int) -> float | None:
         if not ctx_frozen:
             return None
         arr = ctx._frozen_samples.get(node_id)
         if arr is None:
             return None
-        return np.asarray(arr[draw_idx])
+        return float(arr[draw_idx]) # type: ignore
 
-    def eval_node(node_id: int) -> np.ndarray:
+    def eval_node(node_id: int) -> float:
         if node_id in session.cache:
             return session.cache[node_id]
 
@@ -588,26 +573,31 @@ def draw_uncertain(u: Uncertain, session: SampleSession, draw_idx: int | None = 
                         "Correlated group sampler did not populate this leaf in session cache."
                     )
 
-                result = np.asarray(session.cache[node_id])
-                session.cache[node_id] = result
+                result = session.cache[node_id]
                 return result
 
             arr = node.payload.sample(session.n, sampler=session.sampler)
-            result = np.asarray(arr[0])
+            result = float(arr[0])
             session.cache[node_id] = result
             return result
 
         elif node.op == Op.CONST:
-            result = np.asarray(node.payload)
+            result = float(node.payload) # type: ignore
             session.cache[node_id] = result
             return result
 
         else:
             parents = [eval_node(pid) for pid in node.parents]
             if len(parents) == 1:
-                result = np.asarray(eval_op(node, parents[0]))
+                # For single value operations, create a 1-element array
+                a_arr = ss.asarray([parents[0]])
+                result_arr = eval_op(node, a_arr)
+                result = float(result_arr[0]) # type: ignore
             elif len(parents) == 2:
-                result = np.asarray(eval_op(node, parents[0], parents[1]))
+                a_arr = ss.asarray([parents[0]])
+                b_arr = ss.asarray([parents[1]])
+                result_arr = eval_op(node, a_arr, b_arr)
+                result = float(result_arr[0]) # type: ignore
             else:
                 raise RuntimeError(f"Unsupported arity: {len(parents)} parents for node {node_id}")
 

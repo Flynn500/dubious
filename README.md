@@ -31,7 +31,7 @@ If several instances of the same `Uncertain` object are involved in an operation
 
 Correlation between Uncertain objects is currently implemented using Gaussian Copula. This rank based correlation and the rho value used to correlate different objects is NOT the same as the pearson coefficient. 
 
-RNG can be controlled via `Sampler()` objects, these can be constructed using either a seed, or a `numpy.random.Generator()` object and passed into any function that uses MC sampling methods.
+RNG can be controlled via `Sampler()` objects, these can be constructed using either a seed, or a `substratum.Generator()` object and passed into any function that uses MC sampling methods.
 
 
 ### Classes

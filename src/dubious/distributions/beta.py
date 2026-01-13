@@ -1,5 +1,5 @@
 import warnings
-import numpy as np
+import substratum as ss
 from typing import Union, Optional
 import numbers
 
@@ -15,8 +15,9 @@ class Beta(Distribution):
         self.alpha = alpha
         self.beta = beta
 
-    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> np.ndarray:
-        sampler = Sampler()
+    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> ss.Array:
+        if sampler is None:
+            sampler = Sampler()
 
         if isinstance(self.alpha, Sampleable):
             a = self.alpha.sample(n, sampler=sampler)
@@ -27,30 +28,53 @@ class Beta(Distribution):
             b = self.beta.sample(n, sampler=sampler)
         else:
             b = self.beta
-        
-        a_arr = np.asarray(a)
-        b_arr = np.asarray(b)
 
-        bad = (a_arr <= 0) | (b_arr <= 0)
-        if np.any(bad):
-            warnings.warn("Warning: alpha <= 0 or beta <= 0 found, clamped to 1e-6.")
-            a_arr = np.clip(a_arr, a_min=1e-6, a_max=None)
-            b_arr = np.clip(b_arr, a_min=1e-6, a_max=None)
+        # Validate and clamp values
+        if isinstance(a, ss.Array):
+            if any(val <= 0 for val in a):
+                warnings.warn("Warning: alpha <= 0 found, clamped to 1e-6.")
+                a = a.clip(1e-6, 1e308)
+        elif a <= 0:
+            warnings.warn("Warning: alpha <= 0 found, clamped to 1e-6.")
+            a = 1e-6
 
-        return sampler.beta(a_arr, b_arr, size=n)
-    
+        if isinstance(b, ss.Array):
+            if any(val <= 0 for val in b):
+                warnings.warn("Warning: beta <= 0 found, clamped to 1e-6.")
+                b = b.clip(1e-6, 1e308)
+        elif b <= 0:
+            warnings.warn("Warning: beta <= 0 found, clamped to 1e-6.")
+            b = 1e-6
+
+        return sampler.beta(a, b, size=[n])
+
     def mean(self, n=200_000, *, sampler: Optional[Sampler] = None) -> float:
         if not isinstance(self.alpha, Sampleable) and not isinstance(self.beta, Sampleable):
             a = float(self.alpha)
             b = float(self.beta)
             return a / (a + b)
-        
+
         a = self.alpha.sample(n, sampler=sampler) if isinstance(self.alpha, Sampleable) else float(self.alpha)
         b = self.beta.sample(n, sampler=sampler) if isinstance(self.beta, Sampleable) else float(self.beta)
-        a = np.clip(np.asarray(a), 1e-6, None)
-        b = np.clip(np.asarray(b), 1e-6, None)
-        return float(np.mean(a / (a + b)))
-    
+
+        if isinstance(a, ss.Array):
+            a = a.clip(1e-6, 1e308)
+        if isinstance(b, ss.Array):
+            b = b.clip(1e-6, 1e308)
+
+        # Calculate mean of a / (a + b)
+        if isinstance(a, ss.Array) and isinstance(b, ss.Array):
+            ratio = a / (a + b)
+            return ratio.mean()
+        elif isinstance(a, ss.Array):
+            ratio = a / (a + b)
+            return ratio.mean()
+        elif isinstance(b, ss.Array):
+            ratio = a / (a + b)
+            return ratio.mean()
+        else:
+            return a / (a + b)
+
     def var(self, n: int = 200_000, *, sampler: Optional[Sampler] = None) -> float:
         if not isinstance(self.alpha, Sampleable) and not isinstance(self.beta, Sampleable):
             a = float(self.alpha)
@@ -60,17 +84,24 @@ class Beta(Distribution):
 
         a = self.alpha.sample(n, sampler=sampler) if isinstance(self.alpha, Sampleable) else float(self.alpha)
         b = self.beta.sample(n, sampler=sampler) if isinstance(self.beta, Sampleable) else float(self.beta)
-        a = np.clip(np.asarray(a), 1e-6, None)
-        b = np.clip(np.asarray(b), 1e-6, None)
 
-        s = a + b
-        m = a / s
-        v = (a * b) / (s * s * (s + 1.0))
+        if isinstance(a, ss.Array):
+            a = a.clip(1e-6, 1e308)
+        if isinstance(b, ss.Array):
+            b = b.clip(1e-6, 1e308)
 
-        return float(np.mean(v) + np.var(m, ddof=0))
+        # s = a + b, m = a / s, v = (a * b) / (s * s * (s + 1))
+        if isinstance(a, ss.Array) or isinstance(b, ss.Array):
+            s = a + b
+            m = a / s
+            v = (a * b) / (s * s * (s + 1.0))
 
-
-
-
-
-
+            if isinstance(v, ss.Array) and isinstance(m, ss.Array):
+                return v.mean() + m.var()
+            elif isinstance(v, ss.Array):
+                return v.mean() + 0.0
+            else:
+                return float(v)
+        else:
+            s = a + b
+            return (a * b) / (s * s * (s + 1.0))
