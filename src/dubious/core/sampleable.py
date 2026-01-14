@@ -124,7 +124,7 @@ class Distribution(Sampleable):
         """
         raise NotImplementedError
 
-    def quantile(self, q: float, n: int = 50000, *, sampler: Optional[Sampler] = None) -> float:
+    def quantile(self, q: float | ss.Array, n: int = 50000, *, sampler: Optional[Sampler] = None) -> float | ss.Array:
         """
         Compute an approximation of the q-th quantile of data. Defaults to monte carlo simulation if other
         distributions are used as parameters otherwise analytic methods are used.
@@ -138,8 +138,8 @@ class Distribution(Sampleable):
         :return: Estimated quantile value.
         :rtype: float
         """
-        if q < 0.0 or q > 1.0:
-            raise ValueError("q must be between 0 and 1")
+        # if q < 0.0 or q > 1.0:
+        #     raise ValueError("q must be between 0 and 1")
 
         s = self.sample(n, sampler=sampler)
         return s.quantile(q)

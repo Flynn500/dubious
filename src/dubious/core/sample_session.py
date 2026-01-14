@@ -18,7 +18,7 @@ class SampleSession:
     correlation_prepared: bool = False
 
     def prepare_correlation(self, ctx: "Context"):
-        print("908")
+        print("939")
         if self.correlation_prepared:
             return
 
@@ -99,7 +99,7 @@ class SampleSession:
                 return
 
             eps = session.sampler.standard_normal(size=(k, session.n))
-            Z = L @ eps
+            Z = L @ eps # type: ignore
 
             inv_sqrt2 = 1.0 / math.sqrt(2.0)
             U = 0.5 * (1.0 + erf(Z * inv_sqrt2))
@@ -112,9 +112,9 @@ class SampleSession:
                 dist = node.payload
 
                 if dist is not None:
-                    #Xi = dist.quantile(U[i])
-                    Xi_list = [dist.quantile(float(u)) for u in U]
-                    Xi = ss.asarray(Xi_list)
+                    Xi = dist.quantile(U[i])
+                    # Xi_list = [dist.quantile(float(u)) for u in U]
+                    # Xi = ss.asarray(Xi_list)
                 else: 
                     raise ValueError("Leaf node has no distribution.")
                 session.cache[leaf_id] = Xi
