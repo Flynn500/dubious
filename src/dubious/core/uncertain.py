@@ -396,6 +396,62 @@ class Uncertain(Sampleable):
         return Uncertain(ctx=self.ctx, _node=node)
 
 
+    def _collect_leaf_ids(self) -> set[int]:
+        leaves = set()
+        visited = set()
+        stack = [self.node_id]
+        
+        while stack:
+            nid = stack.pop()
+            if nid in visited:
+                continue
+            visited.add(nid)
+            
+            node = self.ctx.get(nid)
+            if node.op == Op.LEAF:
+                leaves.add(nid)
+            else:
+                stack.extend(node.parents)
+        
+        return leaves
+    
+    def sensitivity(self, n: int = 20_000, method: str = "pearson", *, sampler: Optional[Sampler] = None) -> dict[int, float]:
+        """
+        Compute correlation-based sensitivity of this output to each input leaf.
+        
+        :param n: Number of samples.
+        :param method: "pearson" or "spearman"
+        :param sampler: Dubious Sampler object.
+        :return: Dict mapping leaf node_id to correlation with output.
+        """
+        if method not in ("pearson", "spearman"):
+            raise ValueError(f"method must be 'pearson' or 'spearman', got {method!r}")
+        
+        leaf_ids = self._collect_leaf_ids()
+        if not leaf_ids:
+            return {}
+        
+        from .sample_session import SampleSession
+        if sampler is None:
+            sampler = Sampler()
+        session = SampleSession(n, sampler=sampler)
+        
+        output_samples = sample_uncertain(self, session)
+        
+        result = {}
+        for lid in leaf_ids:
+            leaf_samples = session.cache[lid]
+            
+            if method == "pearson":
+                corr = output_samples.pearson(leaf_samples)
+            else:
+                corr = output_samples.spearman(leaf_samples)
+            
+            result[lid] = corr
+        
+        return result
+
+
 def eval_op(node: Node, a: ss.Array, b: Optional[ss.Array] = None) -> ss.Array:
     if node.op == Op.ADD:
         result = a + b # type: ignore

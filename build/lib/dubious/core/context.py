@@ -1,7 +1,7 @@
 from __future__ import annotations
 import itertools
 from typing import Dict, Optional, Union, Any
-import numpy as np
+import substratum as ss
 
 from .node import Node, Op
 from .sampler import Sampler
@@ -10,7 +10,7 @@ from .sampler import Sampler
 class Context:
     """
     Context objects own the graph that stores the operations applied to uncertain distributions.
-    Creating a context is not required to add Uncertain objects together, but it is preffered as 
+    Creating a context is not required to add Uncertain objects together, but it is preffered as
     merging seperate contexts can be expensive.
     """
     def __init__(self):
@@ -20,7 +20,7 @@ class Context:
 
         self._frozen = False
         self._frozen_n = None
-        self._frozen_samples: dict[int, np.ndarray] = {}
+        self._frozen_samples: dict[int, ss.Array] = {}
         self._frozen_groups_done: set[int] = set()
         self.draw_idx = 0
     
@@ -47,40 +47,39 @@ class Context:
     def redraw(self):
         self.draw_idx += 1
     
-    def freeze(self, n, *,sampler: Optional[Sampler] = None):
+    def freeze(self, n, *, sampler: Optional[Sampler] = None):
         """
-        Freeze the context. Sample once and cache the result for all future 
+        Freeze the context. Sample once and cache the result for all future
         operations until unfreeze() or freeze() is called with a different value of n.
 
         :param n: Number of samples.
         :type n: int
-        :param rng: NumPy random number generator.
-        :type rng: np.random.Generator
-        :return: Array of sampled points.
-        :rtype: np.ndarray
+        :param sampler: Dubious Sampler object.
+        :type sampler: Sampler
         """
         if self.frozen and self.frozen_n == n:
             return
-        
+
         if self._frozen and self._frozen_n != n:
             self._frozen_samples.clear()
-        
+
         if sampler is None:
-                sampler = Sampler()
-        
+            sampler = Sampler()
+
         self._frozen = True
         self._frozen_n = n
 
         for node_id, node in self._nodes.items():
             if node.op == Op.LEAF:
-                if node.payload == None:
+                if node.payload is None:
                     raise RuntimeError("LEAF node has no payload.")
                 samples = node.payload.sample(n, sampler=sampler)
+                self._frozen_samples[node_id] = samples
             elif node.op == Op.CONST:
-                samples = np.full(n, node.payload)
-
-            samples.setflags(write=False)
-            self._frozen_samples[node_id] = samples
+                if node.payload is None:
+                    raise RuntimeError("CONST node has no payload.")
+                samples = ss.full([n], float(node.payload))
+                self._frozen_samples[node_id] = samples
 
     def unfreeze(self):
         """

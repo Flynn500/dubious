@@ -1,6 +1,6 @@
-
 import warnings
-import numpy as np
+import substratum as ss
+import math
 from typing import Union, Optional
 import numbers
 
@@ -8,49 +8,58 @@ from ..core.sampleable import Sampleable, Distribution
 from ..core.sampler import Sampler
 
 class LogNormal(Distribution):
-    def __init__(self, mu: Union[float, Sampleable] =0.0, sigma: Union[float, Sampleable] =1.0):
+    def __init__(self, mu: Union[float, Sampleable] = 0.0, sigma: Union[float, Sampleable] = 1.0):
         if isinstance(sigma, numbers.Real) and sigma <= 0:
             raise ValueError("sigma must be positive.")
         self.mu = mu
         self.sigma = sigma
 
-    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> np.ndarray:
+    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> ss.Array:
         if sampler is None:
             sampler = Sampler()
 
         mu = self.mu.sample(n, sampler=sampler) if isinstance(self.mu, Sampleable) else self.mu
         sigma = self.sigma.sample(n, sampler=sampler) if isinstance(self.sigma, Sampleable) else self.sigma
 
-        if np.any(np.asarray(sigma) <= 0):
+        # Check for invalid sigma values
+        if isinstance(sigma, ss.Array):
+            if any(val <= 0 for val in sigma):
+                warnings.warn("Warning: Sigma <= 0 found, clamped to 1e-6.")
+                sigma = sigma.clip(1e-6, 1e308)
+        elif sigma <= 0:
             warnings.warn("Warning: Sigma <= 0 found, clamped to 1e-6.")
-            sigma = np.clip(sigma, a_min=1e-6, a_max=None)
+            sigma = 1e-6
 
-        return sampler.lognormal(mean=mu, sigma=sigma, size=n)
+        return sampler.lognormal(mean=mu, sigma=sigma, size=[n])
 
     def mean(self, n: int = 200_000, *, sampler: Optional[Sampler] = None) -> float:
         if not isinstance(self.mu, Sampleable) and not isinstance(self.sigma, Sampleable):
             mu = float(self.mu)
             sigma = float(self.sigma)
-            return float(np.exp(mu + 0.5 * sigma**2))
+            return math.exp(mu + 0.5 * sigma**2)
 
-        mu_s = self.mu.sample(n, sampler=sampler) if isinstance(self.mu, Sampleable) else np.full(n, self.mu)
-        sg_s = self.sigma.sample(n, sampler=sampler) if isinstance(self.sigma, Sampleable) else np.full(n, self.sigma)
+        mu_s = self.mu.sample(n, sampler=sampler) if isinstance(self.mu, Sampleable) else ss.full([n], float(self.mu))
+        sg_s = self.sigma.sample(n, sampler=sampler) if isinstance(self.sigma, Sampleable) else ss.full([n], float(self.sigma))
 
-        sg_s = np.clip(sg_s, 1e-6, None)
-        return float(np.mean(np.exp(mu_s + 0.5 * sg_s**2)))
-    
+        sg_s = sg_s.clip(1e-6, 1e308)
+        # exp(mu + 0.5 * sigma^2)
+        result = (mu_s + sg_s * sg_s * 0.5).exp()
+        return result.mean()
+
     def var(self, n: int = 200_000, *, sampler: Optional[Sampler] = None) -> float:
         if not isinstance(self.mu, Sampleable) and not isinstance(self.sigma, Sampleable):
             mu = float(self.mu)
             sigma = float(self.sigma)
-            return float((np.exp(sigma**2) - 1.0) * np.exp(2.0 * mu + sigma**2))
+            return (math.exp(sigma**2) - 1.0) * math.exp(2.0 * mu + sigma**2)
 
-        mu_s = self.mu.sample(n, sampler=sampler) if isinstance(self.mu, Sampleable) else np.full(n, self.mu)
-        sg_s = self.sigma.sample(n, sampler=sampler) if isinstance(self.sigma, Sampleable) else np.full(n, self.sigma)
+        mu_s = self.mu.sample(n, sampler=sampler) if isinstance(self.mu, Sampleable) else ss.full([n], float(self.mu))
+        sg_s = self.sigma.sample(n, sampler=sampler) if isinstance(self.sigma, Sampleable) else ss.full([n], float(self.sigma))
 
-        sg_s = np.clip(sg_s, 1e-6, None)
+        sg_s = sg_s.clip(1e-6, 1e308)
 
-        Ey_cond = np.exp(mu_s + 0.5 * sg_s**2)
-        Vy_cond = (np.exp(sg_s**2) - 1.0) * np.exp(2.0 * mu_s + sg_s**2)
+        # Ey_cond = exp(mu + 0.5 * sigma^2)
+        Ey_cond = (mu_s + sg_s * sg_s * 0.5).exp()
+        # Vy_cond = (exp(sigma^2) - 1) * exp(2*mu + sigma^2)
+        Vy_cond = ((sg_s * sg_s).exp() - 1.0) * (mu_s * 2.0 + sg_s * sg_s).exp()
 
-        return float(np.mean(Vy_cond) + np.var(Ey_cond, ddof=0))
+        return Vy_cond.mean() + Ey_cond.var()

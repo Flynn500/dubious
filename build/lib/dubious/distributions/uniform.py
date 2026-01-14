@@ -1,7 +1,5 @@
-import warnings
-import numpy as np
+import substratum as ss
 from typing import Union, Optional
-import numbers
 
 from ..core.sampleable import Sampleable, Distribution
 from ..core.sampler import Sampler
@@ -10,12 +8,12 @@ from .dist_helpers import _is_scalar_real, _mean, _var
 class Uniform(Distribution):
     def __init__(self, low: Union[float, Sampleable] = 0.0, high: Union[float, Sampleable] = 1.0):
         if _is_scalar_real(high) and _is_scalar_real(low):
-            if high <= low: # type: ignore
+            if high <= low:  # type: ignore
                 raise ValueError("high must be greater than low.")
         self.low = low
         self.high = high
 
-    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> np.ndarray:
+    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> ss.Array:
         if sampler is None:
             sampler = Sampler()
 
@@ -25,17 +23,22 @@ class Uniform(Distribution):
             high = self.high
 
         if isinstance(self.low, Sampleable):
-            low = self.low.sample(n, sampler=sampler) 
+            low = self.low.sample(n, sampler=sampler)
         else:
             low = self.low
-        return sampler.uniform(low=low, high=high, size=n)
+
+        return sampler.uniform(low=low, high=high, size=[n])
 
     def mean(self) -> float:
-        if isinstance(self.high, Sampleable): h = self.high.mean() 
-        else: h = self.high
+        if isinstance(self.high, Sampleable):
+            h = self.high.mean()
+        else:
+            h = self.high
 
-        if isinstance(self.low, Sampleable): l = self.low.mean() 
-        else: l = self.low
+        if isinstance(self.low, Sampleable):
+            l = self.low.mean()
+        else:
+            l = self.low
 
         return 0.5 * (l + h)
 

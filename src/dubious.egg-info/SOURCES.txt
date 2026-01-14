@@ -22,6 +22,6 @@ src/dubious/distributions/lognormal.py
 src/dubious/distributions/normal.py
 src/dubious/distributions/uniform.py
 src/dubious/umath/__init__.py
-src/dubious/umath/umath.py
-src/dubious/umath/ustats.py
+src/dubious/umath/ops.py
+src/dubious/umath/stats.py
 tests/test_.py

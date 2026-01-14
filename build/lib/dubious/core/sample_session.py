@@ -1,15 +1,16 @@
-import numpy as np
+import substratum as ss
 from dataclasses import dataclass, field
 from typing import Dict, Any, Callable, Optional, List, Tuple, Set
 from .sampler import Sampler
+import math
 
 from.context import Context
-from ..umath.ustats import erf
+from ..umath.stats import erf
 @dataclass
 class SampleSession:
     n: int
     sampler: Sampler
-    cache: Dict[int, np.ndarray] = field(default_factory=dict)
+    cache: Dict[int, Any] = field(default_factory=dict)
 
     group_samplers: Dict[Any, Callable[["SampleSession"], None]] = field(default_factory=dict)
     leaf_to_group: Dict[int, Any] = field(default_factory=dict)
@@ -17,6 +18,7 @@ class SampleSession:
     correlation_prepared: bool = False
 
     def prepare_correlation(self, ctx: "Context"):
+        print("908")
         if self.correlation_prepared:
             return
 
@@ -61,19 +63,20 @@ class SampleSession:
         k = len(leaf_ids)
 
         #build correlation matrix
-        C = np.eye(k, dtype=float)
+        C = ss.eye(k)
         for i in range(k):
             for j in range(i + 1, k):
                 rho = ctx.get_corr(leaf_ids[i], leaf_ids[j])
                 C[i, j] = C[j, i] = rho
 
         #coerce user input to valid matrix
-        w, V = np.linalg.eigh(C)
-        w_clipped = np.clip(w, 1e-12, None)
-        C_psd = (V * w_clipped) @ V.T
+        w, V = ss.linalg.eig(C)
+        w_clipped = w.clip(1e-12, float('inf'))
 
-        d = np.sqrt(np.diag(C_psd))
-        C_psd = C_psd / np.outer(d, d)
+        C_psd = (V * w_clipped) @ (V.transpose())
+
+        d = (C_psd.diagonal()).sqrt()
+        C_psd = C_psd / ss.outer(d, d)
 
 
         #try cholesky, adding jitter if failing
@@ -81,15 +84,15 @@ class SampleSession:
         cholesky_succeded = False
         for _ in range(5):
             try:
-                L = np.linalg.cholesky(C_psd + jitter * np.eye(C_psd.shape[0]))
+                L = ss.linalg.cholesky(C_psd + jitter * ss.eye(C_psd.shape[0]))
                 cholesky_succeded = True
                 break
-            except np.linalg.LinAlgError:
+            except ValueError:
                 jitter = 1e-12 if jitter == 0.0 else jitter * 10
         if not cholesky_succeded:
-            w, V = np.linalg.eigh(C_psd)
-            w = np.clip(w, 0.0, None)
-            L = V @ np.diag(np.sqrt(w))
+            w, V = ss.linalg.eig(C_psd)
+            w = w.clip(0.0, float('inf'))
+            L = V @ (w.sqrt()).diagonal()
 
         def sampler(session: "SampleSession"):
             if leaf_ids[0] in session.cache:
@@ -98,17 +101,22 @@ class SampleSession:
             eps = session.sampler.standard_normal(size=(k, session.n))
             Z = L @ eps
 
-            inv_sqrt2 = 1.0 / np.sqrt(2.0)
+            inv_sqrt2 = 1.0 / math.sqrt(2.0)
             U = 0.5 * (1.0 + erf(Z * inv_sqrt2))
-
+            print(len(U))
+            #clamp to avoid inf
+            U.clip(1e-15, 1 - 1e-15)
             for i, leaf_id in enumerate(leaf_ids):
+                print(i)
                 node = ctx.get(leaf_id)
                 dist = node.payload
-                #clamp to avoid inf
-                Ui = np.clip(U[i], 1e-15, 1 - 1e-15)
+
                 if dist is not None:
-                    Xi = dist.quantile(Ui)
+                    #Xi = dist.quantile(U[i])
+                    Xi_list = [dist.quantile(float(u)) for u in U]
+                    Xi = ss.asarray(Xi_list)
                 else: 
                     raise ValueError("Leaf node has no distribution.")
                 session.cache[leaf_id] = Xi
         return sampler
+    
