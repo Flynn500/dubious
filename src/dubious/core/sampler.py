@@ -2,10 +2,10 @@ import substratum as ss
 from typing import Union, Optional
 
 class Sampler():
-    def __init__(self, rng: Optional[ss.Generator] = None, seed: Union[int, None] = None):
+    def __init__(self, rng: Optional[ss.random.Generator] = None, seed: Union[int, None] = None):
         if rng is None:
-            rng = ss.Generator.from_seed(seed) if seed is not None else ss.Generator()
-        self.rng: ss.Generator = rng
+            rng = ss.random.Generator.from_seed(seed) if seed is not None else ss.random.Generator()
+        self.rng: ss.random.Generator = rng
 
     #sampling
     def normal(self, loc, scale, size) -> ss.Array:
