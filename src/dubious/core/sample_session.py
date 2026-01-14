@@ -18,7 +18,6 @@ class SampleSession:
     correlation_prepared: bool = False
 
     def prepare_correlation(self, ctx: "Context"):
-        print("939")
         if self.correlation_prepared:
             return
 
@@ -103,11 +102,10 @@ class SampleSession:
 
             inv_sqrt2 = 1.0 / math.sqrt(2.0)
             U = 0.5 * (1.0 + erf(Z * inv_sqrt2))
-            print(len(U))
+
             #clamp to avoid inf
             U.clip(1e-15, 1 - 1e-15)
             for i, leaf_id in enumerate(leaf_ids):
-                print(i)
                 node = ctx.get(leaf_id)
                 dist = node.payload
 

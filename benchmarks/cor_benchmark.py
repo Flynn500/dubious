@@ -5,12 +5,12 @@ from scipy.stats import norm, beta as sp_beta, lognorm as sp_lognorm
 from dubious.distributions import Beta, LogNormal
 from dubious.core import Uncertain, Context, Sampler
 
-from substratum import Array, Generator
+import substratum as ss
 
 #note this file takes a while to run due to list conversions. Once substratum can convert to numpy directly this will be faster
 
 
-def gaussian_copula_reference_beta_lognorm(a, b, mu, sigma, r, n, rng: Generator):
+def gaussian_copula_reference_beta_lognorm(a, b, mu, sigma, r, n, rng: ss.random.Generator):
     """
     Reference: Gaussian copula (Normal -> Uniform via CDF) + SciPy PPFs.
     Uses your new RNG/Array for the normal draws, then converts to NumPy
@@ -44,8 +44,8 @@ def run():
     for N in Ns:
         errs = []
         for seed in seeds:
-            rng1 = Generator.from_seed(seed)
-            rng2 = Generator.from_seed(seed)
+            rng1 = ss.random.Generator.from_seed(seed)
+            rng2 = ss.random.Generator.from_seed(seed)
 
             ctx = Context()
             x = Uncertain(beta, ctx=ctx)
