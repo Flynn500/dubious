@@ -18,7 +18,6 @@ class SampleSession:
     correlation_prepared: bool = False
 
     def prepare_correlation(self, ctx: "Context"):
-        print("939")
         if self.correlation_prepared:
             return
 
@@ -61,7 +60,7 @@ class SampleSession:
     def _make_gaussian_copula_group_sampler(self, ctx: "Context", leaf_ids: List[int]):
         leaf_ids = list(leaf_ids)
         k = len(leaf_ids)
-
+    
         #build correlation matrix
         C = ss.eye(k)
         for i in range(k):
@@ -76,7 +75,7 @@ class SampleSession:
         C_psd = (V * w_clipped) @ (V.transpose())
 
         d = (C_psd.diagonal()).sqrt()
-        C_psd = C_psd / ss.outer(d, d)
+        C_psd = C_psd / ss.linalg.outer(d, d)
 
 
         #try cholesky, adding jitter if failing
@@ -103,11 +102,10 @@ class SampleSession:
 
             inv_sqrt2 = 1.0 / math.sqrt(2.0)
             U = 0.5 * (1.0 + erf(Z * inv_sqrt2))
-            print(len(U))
+
             #clamp to avoid inf
             U.clip(1e-15, 1 - 1e-15)
             for i, leaf_id in enumerate(leaf_ids):
-                print(i)
                 node = ctx.get(leaf_id)
                 dist = node.payload
 

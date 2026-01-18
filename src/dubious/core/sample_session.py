@@ -60,7 +60,7 @@ class SampleSession:
     def _make_gaussian_copula_group_sampler(self, ctx: "Context", leaf_ids: List[int]):
         leaf_ids = list(leaf_ids)
         k = len(leaf_ids)
-
+    
         #build correlation matrix
         C = ss.eye(k)
         for i in range(k):
@@ -75,7 +75,7 @@ class SampleSession:
         C_psd = (V * w_clipped) @ (V.transpose())
 
         d = (C_psd.diagonal()).sqrt()
-        C_psd = C_psd / ss.outer(d, d)
+        C_psd = C_psd / ss.linalg.outer(d, d)
 
 
         #try cholesky, adding jitter if failing

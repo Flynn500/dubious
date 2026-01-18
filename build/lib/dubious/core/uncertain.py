@@ -142,6 +142,15 @@ class Uncertain(Sampleable):
         s = self.sample(n, sampler=sampler)
         return s.mean()
 
+    def median(self, n: int = 20_000, *, sampler: Optional[Sampler] = None) -> float:
+        if self.frozen and self.frozen_n:
+            n = self.frozen_n
+        if self.ctx.frozen and self.ctx.frozen_n:
+            n = self.ctx.frozen_n
+
+        s = self.sample(n, sampler=sampler)
+        return s.median()
+
     def var(self, n: int = 20_000, sampler: Optional[Sampler] = None):
         if self.frozen and self.frozen_n:
             n = self.frozen_n
@@ -172,6 +181,105 @@ class Uncertain(Sampleable):
         s = self.sample(n, sampler=sampler)
         count = sum(1 for val in s if val <= x)
         return count / len(s)
+
+    def sensitivity(self, n: int = 20_000, method: str = "pearson", *, sampler: Optional[Sampler] = None) -> dict[int, float]:
+        """
+        Compute correlation-based sensitivity of this output to each input leaf.
+        
+        :param n: Number of samples.
+        :param method: "pearson" or "spearman"
+        :param sampler: Dubious Sampler object.
+        :return: Dict mapping leaf node_id to correlation with output.
+        """
+        if method not in ("pearson", "spearman"):
+            raise ValueError(f"method must be 'pearson' or 'spearman', got {method!r}")
+        
+        leaf_ids = self._collect_leaf_ids()
+        if not leaf_ids:
+            return {}
+        
+        from .sample_session import SampleSession
+        if sampler is None:
+            sampler = Sampler()
+        session = SampleSession(n, sampler=sampler)
+        
+        output_samples = sample_uncertain(self, session)
+        
+        result = {}
+        for lid in leaf_ids:
+            leaf_samples = session.cache[lid]
+            
+            if method == "pearson":
+                corr = ss.stats.pearson(output_samples, leaf_samples)
+            else:
+                corr = ss.stats.spearman(output_samples, leaf_samples)
+            
+            result[lid] = corr
+        
+        return result
+
+    def _get_local_indices(self, local: dict[Union[int, "Uncertain"], float], k: int, session: "SampleSession") -> list[int]:
+        normalized = {
+            (key.node_id if isinstance(key, Uncertain) else key): value
+            for key, value in local.items()
+        }
+        
+        local_leaf_ids = list(normalized.keys())
+        
+        columns = [session.cache[lid] for lid in local_leaf_ids]
+        samples_matrix = ss.column_stack(columns)
+        
+        query = ss.asarray([normalized[lid] for lid in local_leaf_ids])
+        
+        tree = ss.spatial.BallTree.from_array(samples_matrix, leaf_size=40, metric="euclidean")
+        indices = tree.query_knn(query, k)
+        
+        return indices
+
+    def local_sensitivity(self, local: dict[int, float], n: int = 20_000, k: int = 100, method: str = "pearson", *, sampler: Optional[Sampler] = None) -> dict[int, float]:
+        """
+        Compute sensitivity in the neighborhood of specific input values.
+        
+        :param local: Dict mapping leaf_id to a query value. Sensitivity is computed
+                    only among samples where these inputs are near the query values.
+        :param n: Number of samples.
+        :param k: Number of neighbors to use.
+        :param method: "pearson" or "spearman"
+        :param sampler: Dubious Sampler object.
+        :return: Dict mapping leaf node_id to correlation with output.
+        """
+        if method not in ("pearson", "spearman"):
+            raise ValueError(f"method must be 'pearson' or 'spearman', got {method!r}")
+        
+        if not local:
+            raise ValueError("local must contain at least one leaf_id: value pair")
+        
+        leaf_ids = self._collect_leaf_ids()
+        if not leaf_ids:
+            return {}
+        
+        from .sample_session import SampleSession
+        if sampler is None:
+            sampler = Sampler()
+        session = SampleSession(n, sampler=sampler)
+        
+        output_samples = sample_uncertain(self, session)
+        indices = self._get_local_indices(local, k, session)
+        
+        result = {}
+        for lid in leaf_ids:
+            leaf_samples = session.cache[lid]
+            leaf_subset = leaf_samples.take(indices)
+            output_subset = output_samples.take(indices)
+            
+            if method == "pearson":
+                corr = ss.stats.pearson(output_subset, leaf_subset)
+            else:
+                corr = ss.stats.spearman(output_subset, leaf_subset)
+            
+            result[lid] = corr
+        
+        return result
 
     def draw(self, *, sampler: Optional[Sampler] = None) -> float:
         """
@@ -273,6 +381,14 @@ class Uncertain(Sampleable):
     #float conversion
     def __float__(self):
         return self.draw()
+
+    def __hash__(self):
+        return hash(self.node_id)
+
+    def __eq__(self, other):
+        if isinstance(other, Uncertain):
+            return self.node_id == other.node_id
+        return NotImplemented
 
     #our arithmatic operations
     def __add__(self, other: Union["Uncertain", Number]) -> "Uncertain":
@@ -415,41 +531,7 @@ class Uncertain(Sampleable):
         
         return leaves
     
-    def sensitivity(self, n: int = 20_000, method: str = "pearson", *, sampler: Optional[Sampler] = None) -> dict[int, float]:
-        """
-        Compute correlation-based sensitivity of this output to each input leaf.
-        
-        :param n: Number of samples.
-        :param method: "pearson" or "spearman"
-        :param sampler: Dubious Sampler object.
-        :return: Dict mapping leaf node_id to correlation with output.
-        """
-        if method not in ("pearson", "spearman"):
-            raise ValueError(f"method must be 'pearson' or 'spearman', got {method!r}")
-        
-        leaf_ids = self._collect_leaf_ids()
-        if not leaf_ids:
-            return {}
-        
-        from .sample_session import SampleSession
-        if sampler is None:
-            sampler = Sampler()
-        session = SampleSession(n, sampler=sampler)
-        
-        output_samples = sample_uncertain(self, session)
-        
-        result = {}
-        for lid in leaf_ids:
-            leaf_samples = session.cache[lid]
-            
-            if method == "pearson":
-                corr = output_samples.pearson(leaf_samples)
-            else:
-                corr = output_samples.spearman(leaf_samples)
-            
-            result[lid] = corr
-        
-        return result
+
 
 
 def eval_op(node: Node, a: ss.Array, b: Optional[ss.Array] = None) -> ss.Array:
