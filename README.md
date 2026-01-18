@@ -43,7 +43,7 @@ Uncertain objects are the wrapper for distributions that allow them to be used l
 
 To ensure the same output after repeated calls, Uncertain objects support `freeze()` and `unfreeze()`, although this only freezes a single Uncertain object. It is recommended to instead freeze the entire context for truly deterministic results.
 
-Get a summary of metrics via `summary()` or check input sensitivity via `sensitivity()`.
+Get a summary of metrics via `summary()` or check input sensitivity via `sensitivity()`. `local_sensitivity()` allows you to pass a dict of uncertain objects and corresponding values, returning the sensitivity at that specific neighbourhood within the sample space.
 
 `Context()`:
 Context objects own the graph through which we track computations. You can add uncertain objects from different contexts, but be aware that this creates a new context in the process. To avoid this, create all new uncertain objects with ctx =  _Your context object_. You can also easily get a reference to a newly created `Context` via `ctx = my_uncertain_object.ctx`.
