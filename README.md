@@ -28,7 +28,7 @@ With python v3.9+ `pip install dubious`
 ### Caveats
 
 - If several instances of the same `Uncertain` object are involved in an operation these are assumed to represent the same variable so the samples used to calculate these values for each will be identical.
-- Correlation between Uncertain objects is currently implemented using Gaussian Copula. This rank based correlation and the rho value used to correlate different objects is NOT the same as the pearson coefficient. 
+- Correlation between Uncertain objects is currently implemented using Gaussian Copula. This rank based correlation and the rho value used to correlate different objects is NOT the same as the pearson coefficient. Copula based correlation is accurate across most of the distribution, but in the 99th and 1st percentiles we underestimate by about 3%. This under-estimation continues to grow further into the tails. 
 - RNG can be controlled via `Sampler()` objects, these can be constructed using either a seed, or a `substratum.Generator()` object and passed into any function that uses MC sampling methods. Alternitvely, you can call freeze on a context object to ensure the same samples are used for subsequent methods.
 
 
