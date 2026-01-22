@@ -218,7 +218,7 @@ class Uncertain(Sampleable):
         
         return result
 
-    def _get_local_indices(self, local: dict[Union[int, "Uncertain"], float], k: int, session: "SampleSession") -> list[int]:
+    def _get_local_indices(self, local: dict[Union[int, "Uncertain"], float], k: int, session: "SampleSession") -> list:
         normalized = {
             (key.node_id if isinstance(key, Uncertain) else key): value
             for key, value in local.items()
@@ -228,7 +228,7 @@ class Uncertain(Sampleable):
         
         columns = [session.cache[lid] for lid in local_leaf_ids]
         samples_matrix = ss.column_stack(columns)
-        
+
         query = ss.asarray([normalized[lid] for lid in local_leaf_ids])
         
         tree = ss.spatial.BallTree.from_array(samples_matrix, leaf_size=40, metric="euclidean")
@@ -236,7 +236,7 @@ class Uncertain(Sampleable):
         
         return indices
 
-    def local_sensitivity(self, local: dict[int, float], n: int = 20_000, k: int = 100, method: str = "pearson", *, sampler: Optional[Sampler] = None) -> dict[int, float]:
+    def local_sensitivity(self, local: dict[Union[int, "Uncertain"], float], n: int = 20_000, k: int = 100, method: str = "pearson", *, sampler: Optional[Sampler] = None) -> dict[int, float]:
         """
         Compute sensitivity in the neighborhood of specific input values.
         
@@ -270,7 +270,7 @@ class Uncertain(Sampleable):
         for lid in leaf_ids:
             leaf_samples = session.cache[lid]
             leaf_subset = leaf_samples.take(indices)
-            output_subset = output_samples.take(indices)
+            output_subset = output_samples.take(indices)  # type: ignore
             
             if method == "pearson":
                 corr = ss.stats.pearson(output_subset, leaf_subset)

@@ -1,7 +1,11 @@
 ## 0.4
 ### Added
+- Local sensitivity function shows the sensitivty at a specifed region within the sample space.
+- Draw and __float__ methods. Uncertain objects can now be used like floats, calling redraw on the context will cycle to the next value else the same random value will be used.
+- Median method for uncertain objects.
 ### Changed
-When frozen, dmonte carlo methods will default to the value of n the node / context was frozen at. Previously the different defaults for mean var etc. would error unless n was specified manually to be the value of n frozen with.
+- When frozen, Monte Carlo methods will default to the value of n the node / context was frozen at. Previously the different defaults for mean var etc. would error unless n was specified manually to be the same value of n frozen with.
+- Changed from numpy to substratum as the libraries back end.
 ## 0.3
 ### Added
 - Added correlation via Gaussian Copula

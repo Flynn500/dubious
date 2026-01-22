@@ -42,7 +42,6 @@ class LogNormal(Distribution):
         sg_s = self.sigma.sample(n, sampler=sampler) if isinstance(self.sigma, Sampleable) else ss.full([n], float(self.sigma))
 
         sg_s = sg_s.clip(1e-6, 1e308)
-        # exp(mu + 0.5 * sigma^2)
         result = (mu_s + sg_s * sg_s * 0.5).exp()
         return result.mean()
 
@@ -57,9 +56,7 @@ class LogNormal(Distribution):
 
         sg_s = sg_s.clip(1e-6, 1e308)
 
-        # Ey_cond = exp(mu + 0.5 * sigma^2)
         Ey_cond = (mu_s + sg_s * sg_s * 0.5).exp()
-        # Vy_cond = (exp(sigma^2) - 1) * exp(2*mu + sigma^2)
         Vy_cond = ((sg_s * sg_s).exp() - 1.0) * (mu_s * 2.0 + sg_s * sg_s).exp()
 
         return Vy_cond.mean() + Ey_cond.var()

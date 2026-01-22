@@ -62,7 +62,6 @@ class Beta(Distribution):
         if isinstance(b, ss.Array):
             b = b.clip(1e-6, 1e308)
 
-        # Calculate mean of a / (a + b)
         if isinstance(a, ss.Array) and isinstance(b, ss.Array):
             ratio = a / (a + b)
             return ratio.mean()
@@ -90,7 +89,6 @@ class Beta(Distribution):
         if isinstance(b, ss.Array):
             b = b.clip(1e-6, 1e308)
 
-        # s = a + b, m = a / s, v = (a * b) / (s * s * (s + 1))
         if isinstance(a, ss.Array) or isinstance(b, ss.Array):
             s = a + b
             m = a / s

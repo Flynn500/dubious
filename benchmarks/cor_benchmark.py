@@ -7,9 +7,6 @@ from dubious.core import Uncertain, Context, Sampler
 
 import substratum as ss
 
-#note this file takes a while to run due to list conversions. Once substratum can convert to numpy directly this will be faster
-
-
 def gaussian_copula_reference_beta_lognorm(a, b, mu, sigma, r, n, rng: ss.random.Generator):
     """
     Reference: Gaussian copula (Normal -> Uniform via CDF) + SciPy PPFs.
