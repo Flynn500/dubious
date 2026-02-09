@@ -1,5 +1,5 @@
 import warnings
-import substratum as ss
+import ironforest as irn
 import math
 from typing import Union, Optional
 import numbers
@@ -14,7 +14,7 @@ class LogNormal(Distribution):
         self.mu = mu
         self.sigma = sigma
 
-    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> ss.Array:
+    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> irn.Array:
         if sampler is None:
             sampler = Sampler()
 
@@ -22,7 +22,7 @@ class LogNormal(Distribution):
         sigma = self.sigma.sample(n, sampler=sampler) if isinstance(self.sigma, Sampleable) else self.sigma
 
         # Check for invalid sigma values
-        if isinstance(sigma, ss.Array):
+        if isinstance(sigma, irn.Array):
             if any(val <= 0 for val in sigma):
                 warnings.warn("Warning: Sigma <= 0 found, clamped to 1e-6.")
                 sigma = sigma.clip(1e-6, 1e308)
@@ -38,8 +38,8 @@ class LogNormal(Distribution):
             sigma = float(self.sigma)
             return math.exp(mu + 0.5 * sigma**2)
 
-        mu_s = self.mu.sample(n, sampler=sampler) if isinstance(self.mu, Sampleable) else ss.full([n], float(self.mu))
-        sg_s = self.sigma.sample(n, sampler=sampler) if isinstance(self.sigma, Sampleable) else ss.full([n], float(self.sigma))
+        mu_s = self.mu.sample(n, sampler=sampler) if isinstance(self.mu, Sampleable) else irn.full([n], float(self.mu))
+        sg_s = self.sigma.sample(n, sampler=sampler) if isinstance(self.sigma, Sampleable) else irn.full([n], float(self.sigma))
 
         sg_s = sg_s.clip(1e-6, 1e308)
         result = (mu_s + sg_s * sg_s * 0.5).exp()
@@ -51,8 +51,8 @@ class LogNormal(Distribution):
             sigma = float(self.sigma)
             return (math.exp(sigma**2) - 1.0) * math.exp(2.0 * mu + sigma**2)
 
-        mu_s = self.mu.sample(n, sampler=sampler) if isinstance(self.mu, Sampleable) else ss.full([n], float(self.mu))
-        sg_s = self.sigma.sample(n, sampler=sampler) if isinstance(self.sigma, Sampleable) else ss.full([n], float(self.sigma))
+        mu_s = self.mu.sample(n, sampler=sampler) if isinstance(self.mu, Sampleable) else irn.full([n], float(self.mu))
+        sg_s = self.sigma.sample(n, sampler=sampler) if isinstance(self.sigma, Sampleable) else irn.full([n], float(self.sigma))
 
         sg_s = sg_s.clip(1e-6, 1e308)
 

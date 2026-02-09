@@ -1,4 +1,4 @@
-import substratum as ss
+import ironforest as irn
 from typing import Union, Optional
 
 from ..core.sampleable import Sampleable, Distribution
@@ -13,7 +13,7 @@ class Uniform(Distribution):
         self.low = low
         self.high = high
 
-    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> ss.Array:
+    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> irn.Array:
         if sampler is None:
             sampler = Sampler()
 

@@ -1,5 +1,5 @@
 import warnings
-import substratum as ss
+import ironforest as irn
 from typing import Union, Optional
 import numbers
 
@@ -15,7 +15,7 @@ class Beta(Distribution):
         self.alpha = alpha
         self.beta = beta
 
-    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> ss.Array:
+    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> irn.Array:
         if sampler is None:
             sampler = Sampler()
 
@@ -30,7 +30,7 @@ class Beta(Distribution):
             b = self.beta
 
         # Validate and clamp values
-        if isinstance(a, ss.Array):
+        if isinstance(a, irn.Array):
             if any(val <= 0 for val in a):
                 warnings.warn("Warning: alpha <= 0 found, clamped to 1e-6.")
                 a = a.clip(1e-6, 1e308)
@@ -38,7 +38,7 @@ class Beta(Distribution):
             warnings.warn("Warning: alpha <= 0 found, clamped to 1e-6.")
             a = 1e-6
 
-        if isinstance(b, ss.Array):
+        if isinstance(b, irn.Array):
             if any(val <= 0 for val in b):
                 warnings.warn("Warning: beta <= 0 found, clamped to 1e-6.")
                 b = b.clip(1e-6, 1e308)
@@ -57,18 +57,18 @@ class Beta(Distribution):
         a = self.alpha.sample(n, sampler=sampler) if isinstance(self.alpha, Sampleable) else float(self.alpha)
         b = self.beta.sample(n, sampler=sampler) if isinstance(self.beta, Sampleable) else float(self.beta)
 
-        if isinstance(a, ss.Array):
+        if isinstance(a, irn.Array):
             a = a.clip(1e-6, 1e308)
-        if isinstance(b, ss.Array):
+        if isinstance(b, irn.Array):
             b = b.clip(1e-6, 1e308)
 
-        if isinstance(a, ss.Array) and isinstance(b, ss.Array):
+        if isinstance(a, irn.Array) and isinstance(b, irn.Array):
             ratio = a / (a + b)
             return ratio.mean()
-        elif isinstance(a, ss.Array):
+        elif isinstance(a, irn.Array):
             ratio = a / (a + b)
             return ratio.mean()
-        elif isinstance(b, ss.Array):
+        elif isinstance(b, irn.Array):
             ratio = a / (a + b)
             return ratio.mean()
         else:
@@ -84,19 +84,19 @@ class Beta(Distribution):
         a = self.alpha.sample(n, sampler=sampler) if isinstance(self.alpha, Sampleable) else float(self.alpha)
         b = self.beta.sample(n, sampler=sampler) if isinstance(self.beta, Sampleable) else float(self.beta)
 
-        if isinstance(a, ss.Array):
+        if isinstance(a, irn.Array):
             a = a.clip(1e-6, 1e308)
-        if isinstance(b, ss.Array):
+        if isinstance(b, irn.Array):
             b = b.clip(1e-6, 1e308)
 
-        if isinstance(a, ss.Array) or isinstance(b, ss.Array):
+        if isinstance(a, irn.Array) or isinstance(b, irn.Array):
             s = a + b
             m = a / s
             v = (a * b) / (s * s * (s + 1.0))
 
-            if isinstance(v, ss.Array) and isinstance(m, ss.Array):
+            if isinstance(v, irn.Array) and isinstance(m, irn.Array):
                 return v.mean() + m.var()
-            elif isinstance(v, ss.Array):
+            elif isinstance(v, irn.Array):
                 return v.mean() + 0.0
             else:
                 return float(v)

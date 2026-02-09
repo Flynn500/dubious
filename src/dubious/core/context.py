@@ -1,7 +1,7 @@
 from __future__ import annotations
 import itertools
 from typing import Dict, Optional, Union, Any
-import substratum as ss
+import ironforest as irn
 
 from .node import Node, Op
 from .sampler import Sampler
@@ -20,7 +20,7 @@ class Context:
 
         self._frozen = False
         self._frozen_n = None
-        self._frozen_samples: dict[int, ss.Array] = {}
+        self._frozen_samples: dict[int, irn.Array] = {}
         self._frozen_groups_done: set[int] = set()
         self.draw_idx = 0
     
@@ -78,7 +78,7 @@ class Context:
             elif node.op == Op.CONST:
                 if node.payload is None:
                     raise RuntimeError("CONST node has no payload.")
-                samples = ss.full([n], float(node.payload))
+                samples = irn.full([n], float(node.payload))
                 self._frozen_samples[node_id] = samples
 
     def unfreeze(self):

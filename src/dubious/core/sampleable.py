@@ -1,4 +1,4 @@
-import substratum as ss
+import ironforest as irn
 from abc import abstractmethod
 from typing import Optional
 from math import sqrt
@@ -6,7 +6,7 @@ from .sampler import Sampler
 
 class Sampleable():
     @abstractmethod
-    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> ss.Array:
+    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> irn.Array:
         """
         Sample points from a distribution.
 
@@ -89,7 +89,7 @@ class Sampleable():
 
 class Distribution(Sampleable):
     @abstractmethod
-    def sample(self, n: int, *, sampler: Optional[Sampler] = None, advance: int = 0) -> ss.Array:
+    def sample(self, n: int, *, sampler: Optional[Sampler] = None, advance: int = 0) -> irn.Array:
         """
         Sample points from a distribution.
 
@@ -124,7 +124,7 @@ class Distribution(Sampleable):
         """
         raise NotImplementedError
 
-    def quantile(self, q: float | ss.Array, n: int = 50000, *, sampler: Optional[Sampler] = None) -> float | ss.Array:
+    def quantile(self, q: float | irn.Array, n: int = 50000, *, sampler: Optional[Sampler] = None) -> float | irn.Array:
         """
         Compute an approximation of the q-th quantile of data. Defaults to monte carlo simulation if other
         distributions are used as parameters otherwise analytic methods are used.
