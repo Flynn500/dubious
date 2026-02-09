@@ -55,7 +55,7 @@ Context objects also support `freeze()` and `unfreeze()`, freezing results throu
 
 ```python
 from dubious.distributions import Normal
-from dubious.core import Uncertain, Context
+from dubious import Uncertain, Context
 
 ctx = Context()
 
@@ -77,7 +77,7 @@ We can also use distribution and uncertain objects as parameters.
 
 ```python
 from dubious.distributions import Normal, Beta
-from dubious.core import Uncertain, Context
+from dubious import Uncertain, Context
 
 ctx = Context()
 
@@ -101,7 +101,7 @@ An example of correlation:
 ```python
 #two non-Gaussian marginals correlated using copula
 from dubious.distributions import Beta, LogNormal
-from dubious.core import Uncertain, Context
+from dubious import Uncertain, Context
 
 ctx = Context()
 
