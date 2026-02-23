@@ -54,7 +54,6 @@ def test_umath_sin_matches_manual_on_samples():
     s1 = x.sample(n, sampler=sampler)
     s2 = sin(x).sample(n, sampler=sampler2)
 
-    # Compare element by element using substratum
     for i in range(n):
         expected = math.sin(float(s1[i]))
         actual = float(s2[i])

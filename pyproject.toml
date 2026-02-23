@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dubious"
-version = "0.4.0"
+version = "0.4.1"
 description = "Dubious is a Python library for propagating uncertainty through numerical computations"
 authors = [
   { name="Flynn500", email="flynnwilson101@gmail.com" },
@@ -13,7 +13,7 @@ authors = [
 requires-python = ">=3.9"
 license = {file = "LICENSE"}
 dependencies = [
-  "ironforest>=0.2",
+  "ironforest>=0.4",
 ]
 dynamic = ["readme"]
 

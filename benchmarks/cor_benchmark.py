@@ -5,7 +5,7 @@ from scipy.stats import norm, beta as sp_beta, lognorm as sp_lognorm
 from dubious.distributions import Beta, LogNormal
 from dubious.core import Uncertain, Context, Sampler
 
-import substratum as ss
+import ironforest as ss
 
 def gaussian_copula_reference_beta_lognorm(a, b, mu, sigma, r, n, rng: ss.random.Generator):
     """

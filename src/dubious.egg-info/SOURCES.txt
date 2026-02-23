@@ -18,6 +18,7 @@ src/dubious/core/uncertain.py
 src/dubious/distributions/__init__.py
 src/dubious/distributions/beta.py
 src/dubious/distributions/dist_helpers.py
+src/dubious/distributions/gamma.py
 src/dubious/distributions/lognormal.py
 src/dubious/distributions/normal.py
 src/dubious/distributions/uniform.py

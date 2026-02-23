@@ -1,5 +1,13 @@
 __version__ = "0.4.0"
 
-__all__ = ["distributions", "core", "umath"]
-
 from . import distributions, core, umath
+from .core import Uncertain, Context, Sampler
+
+__all__ = [
+    "distributions",
+    "core",
+    "umath",
+    "Uncertain",
+    "Context",
+    "Sampler",
+]

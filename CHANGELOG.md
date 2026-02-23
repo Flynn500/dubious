@@ -1,3 +1,5 @@
+## 0.4.1
+Internal changes only.
 ## 0.4
 ### Added
 - Local sensitivity function shows the sensitivty at a specifed region within the sample space.

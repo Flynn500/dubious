@@ -6,6 +6,9 @@ import math
 
 from.context import Context
 from ..umath.stats import erf
+
+
+
 @dataclass
 class SampleSession:
     n: int
@@ -60,9 +63,9 @@ class SampleSession:
     def _make_gaussian_copula_group_sampler(self, ctx: "Context", leaf_ids: List[int]):
         leaf_ids = list(leaf_ids)
         k = len(leaf_ids)
-    
+
         #build correlation matrix
-        C = irn.eye(k)
+        C = irn.ndutils.eye(k)
         for i in range(k):
             for j in range(i + 1, k):
                 rho = ctx.get_corr(leaf_ids[i], leaf_ids[j])
@@ -82,7 +85,7 @@ class SampleSession:
         cholesky_succeded = False
         for _ in range(5):
             try:
-                L = irn.linalg.cholesky(C_psd + jitter * irn.eye(C_psd.shape[0]))
+                L = irn.linalg.cholesky(C_psd + jitter * irn.ndutils.eye(C_psd.shape[0]))
                 cholesky_succeded = True
                 break
             except ValueError:
@@ -110,8 +113,7 @@ class SampleSession:
 
                 if dist is not None:
                     Xi = dist.quantile(U[i])
-                    # Xi_list = [dist.quantile(float(u)) for u in U]
-                    # Xi = ss.asarray(Xi_list)
+
                 else: 
                     raise ValueError("Leaf node has no distribution.")
                 session.cache[leaf_id] = Xi

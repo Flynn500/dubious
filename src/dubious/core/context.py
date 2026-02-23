@@ -78,7 +78,7 @@ class Context:
             elif node.op == Op.CONST:
                 if node.payload is None:
                     raise RuntimeError("CONST node has no payload.")
-                samples = irn.full([n], float(node.payload))
+                samples = irn.ndutils.full([n], float(node.payload))
                 self._frozen_samples[node_id] = samples
 
     def unfreeze(self):

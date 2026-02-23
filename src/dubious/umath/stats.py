@@ -1,4 +1,4 @@
-import substratum as ss
+import ironforest as ss
 from typing import Union, Sequence
 
 """
@@ -8,7 +8,7 @@ conversions should happen in the core modules if needed.
 
 def erf(x: Union[ss.Array, Sequence[float]]) -> ss.Array:
     if not isinstance(x, ss.Array):
-        x_f = ss.asarray(list(x))
+        x_f = ss.ndutils.asarray(list(x))
     else:
         x_f = x
 

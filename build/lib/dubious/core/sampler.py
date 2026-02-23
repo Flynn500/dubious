@@ -1,4 +1,4 @@
-import substratum as ss
+import ironforest as ss
 from typing import Union, Optional
 
 class Sampler():
@@ -22,4 +22,8 @@ class Sampler():
 
     def beta(self, a_arr, b_arr, size) -> ss.Array:
         return self.rng.beta(a_arr, b_arr, size)
+
+    def gamma(self, shape, scale, size) -> ss.Array:
+        return self.rng.gamma(shape, scale, size)
+
 

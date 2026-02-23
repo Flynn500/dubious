@@ -1,5 +1,5 @@
 from __future__ import annotations
-import substratum as ss
+import ironforest as irn
 import math
 from typing import Optional, Union, TYPE_CHECKING
 import warnings
@@ -37,7 +37,7 @@ class Uncertain(Sampleable):
 
         self._frozen = False
         self._frozen_n: int | None = None
-        self._frozen_samples: ss.Array | None = None
+        self._frozen_samples: irn.Array | None = None
 
     @property
     def node_id(self): return self._node.id
@@ -119,7 +119,7 @@ class Uncertain(Sampleable):
 
 
     #statistical methods
-    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> ss.Array:
+    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> irn.Array:
         if self._frozen_samples is not None:
             if n != len(self._frozen_samples):
                 raise ValueError(f"Frozen sample length mismatch. To change n, first unfreeze the uncertain object.")
@@ -210,15 +210,15 @@ class Uncertain(Sampleable):
             leaf_samples = session.cache[lid]
             
             if method == "pearson":
-                corr = ss.stats.pearson(output_samples, leaf_samples)
+                corr = irn.stats.pearson(output_samples, leaf_samples)
             else:
-                corr = ss.stats.spearman(output_samples, leaf_samples)
+                corr = irn.stats.spearman(output_samples, leaf_samples)
             
             result[lid] = corr
         
         return result
 
-    def _get_local_indices(self, local: dict[Union[int, "Uncertain"], float], k: int, session: "SampleSession") -> ss.Array:
+    def _get_local_indices(self, local: dict[Union[int, "Uncertain"], float], k: int, session: "SampleSession") -> list:
         normalized = {
             (key.node_id if isinstance(key, Uncertain) else key): value
             for key, value in local.items()
@@ -227,11 +227,11 @@ class Uncertain(Sampleable):
         local_leaf_ids = list(normalized.keys())
         
         columns = [session.cache[lid] for lid in local_leaf_ids]
-        samples_matrix = ss.column_stack(columns)
+        samples_matrix = irn.column_stack(columns)
 
-        query = ss.asarray([normalized[lid] for lid in local_leaf_ids])
+        query = irn.asarray([normalized[lid] for lid in local_leaf_ids])
         
-        tree = ss.spatial.BallTree.from_array(samples_matrix, leaf_size=40, metric="euclidean")
+        tree = irn.spatial.BallTree.from_array(samples_matrix, leaf_size=40, metric="euclidean")
         indices = tree.query_knn(query, k)
         
         return indices
@@ -270,12 +270,12 @@ class Uncertain(Sampleable):
         for lid in leaf_ids:
             leaf_samples = session.cache[lid]
             leaf_subset = leaf_samples.take(indices)
-            output_subset = output_samples.take(indices)
+            output_subset = output_samples.take(indices)  # type: ignore
             
             if method == "pearson":
-                corr = ss.stats.pearson(output_subset, leaf_subset)
+                corr = irn.stats.pearson(output_subset, leaf_subset)
             else:
-                corr = ss.stats.spearman(output_subset, leaf_subset)
+                corr = irn.stats.spearman(output_subset, leaf_subset)
             
             result[lid] = corr
         
@@ -534,7 +534,7 @@ class Uncertain(Sampleable):
 
 
 
-def eval_op(node: Node, a: ss.Array, b: Optional[ss.Array] = None) -> ss.Array:
+def eval_op(node: Node, a: irn.Array, b: Optional[irn.Array] = None) -> irn.Array:
     if node.op == Op.ADD:
         result = a + b # type: ignore
     elif node.op == Op.SUB:
@@ -578,11 +578,11 @@ def eval_op(node: Node, a: ss.Array, b: Optional[ss.Array] = None) -> ss.Array:
     return result
 
 
-def sample_uncertain(u: Uncertain, session: "SampleSession") -> ss.Array:
+def sample_uncertain(u: Uncertain, session: "SampleSession") -> irn.Array:
     ctx = u.ctx
     ctx_frozen = ctx.frozen
 
-    def _ctx_frozen_get(node_id: int) -> ss.Array | None:
+    def _ctx_frozen_get(node_id: int) -> irn.Array | None:
         if not ctx_frozen:
             return None
         if ctx.frozen_n is None:
@@ -595,11 +595,11 @@ def sample_uncertain(u: Uncertain, session: "SampleSession") -> ss.Array:
             )
         return ctx._frozen_samples.get(node_id)
 
-    def _ctx_frozen_put(node_id: int, samples: ss.Array) -> None:
+    def _ctx_frozen_put(node_id: int, samples: irn.Array) -> None:
         ctx._frozen_samples[node_id] = samples
 
     #recursive eval function
-    def eval_node(node_id: int) -> ss.Array:
+    def eval_node(node_id: int) -> irn.Array:
         if node_id in session.cache:
             return session.cache[node_id]
 
@@ -728,12 +728,12 @@ def draw_uncertain(u: Uncertain, session: "SampleSession", draw_idx: int | None 
             parents = [eval_node(pid) for pid in node.parents]
             if len(parents) == 1:
                 # For single value operations, create a 1-element array
-                a_arr = ss.asarray([parents[0]])
+                a_arr = irn.asarray([parents[0]])
                 result_arr = eval_op(node, a_arr)
                 result = float(result_arr[0]) # type: ignore
             elif len(parents) == 2:
-                a_arr = ss.asarray([parents[0]])
-                b_arr = ss.asarray([parents[1]])
+                a_arr = irn.asarray([parents[0]])
+                b_arr = irn.asarray([parents[1]])
                 result_arr = eval_op(node, a_arr, b_arr)
                 result = float(result_arr[0]) # type: ignore
             else:

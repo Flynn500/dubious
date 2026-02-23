@@ -38,8 +38,8 @@ class LogNormal(Distribution):
             sigma = float(self.sigma)
             return math.exp(mu + 0.5 * sigma**2)
 
-        mu_s = self.mu.sample(n, sampler=sampler) if isinstance(self.mu, Sampleable) else irn.full([n], float(self.mu))
-        sg_s = self.sigma.sample(n, sampler=sampler) if isinstance(self.sigma, Sampleable) else irn.full([n], float(self.sigma))
+        mu_s = self.mu.sample(n, sampler=sampler) if isinstance(self.mu, Sampleable) else irn.ndutils.full([n], float(self.mu))
+        sg_s = self.sigma.sample(n, sampler=sampler) if isinstance(self.sigma, Sampleable) else irn.ndutils.full([n], float(self.sigma))
 
         sg_s = sg_s.clip(1e-6, 1e308)
         result = (mu_s + sg_s * sg_s * 0.5).exp()
@@ -51,8 +51,8 @@ class LogNormal(Distribution):
             sigma = float(self.sigma)
             return (math.exp(sigma**2) - 1.0) * math.exp(2.0 * mu + sigma**2)
 
-        mu_s = self.mu.sample(n, sampler=sampler) if isinstance(self.mu, Sampleable) else irn.full([n], float(self.mu))
-        sg_s = self.sigma.sample(n, sampler=sampler) if isinstance(self.sigma, Sampleable) else irn.full([n], float(self.sigma))
+        mu_s = self.mu.sample(n, sampler=sampler) if isinstance(self.mu, Sampleable) else irn.ndutils.full([n], float(self.mu))
+        sg_s = self.sigma.sample(n, sampler=sampler) if isinstance(self.sigma, Sampleable) else irn.ndutils.full([n], float(self.sigma))
 
         sg_s = sg_s.clip(1e-6, 1e308)
 

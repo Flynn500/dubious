@@ -1,5 +1,5 @@
 import warnings
-import substratum as ss
+import ironforest as irn
 from typing import Union, Optional
 import numbers
 
@@ -14,7 +14,7 @@ class Normal(Distribution):
         self.mu = mu
         self.sigma = sigma
 
-    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> ss.Array:
+    def sample(self, n: int, *, sampler: Optional[Sampler] = None) -> irn.Array:
         if sampler is None:
             sampler = Sampler()
 
@@ -29,7 +29,7 @@ class Normal(Distribution):
             sigma = self.sigma
 
         # Check for invalid sigma values
-        if isinstance(sigma, ss.Array):
+        if isinstance(sigma, irn.Array):
             if any(val <= 0 for val in sigma):
                 warnings.warn("Warning: Sigma <= 0 found, clamped to 1e-6.")
                 sigma = sigma.clip(1e-6, 1e308)

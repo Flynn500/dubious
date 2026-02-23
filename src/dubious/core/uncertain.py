@@ -227,14 +227,14 @@ class Uncertain(Sampleable):
         local_leaf_ids = list(normalized.keys())
         
         columns = [session.cache[lid] for lid in local_leaf_ids]
-        samples_matrix = irn.column_stack(columns)
+        samples_matrix = irn.ndutils.column_stack(columns)
 
-        query = irn.asarray([normalized[lid] for lid in local_leaf_ids])
+        query = irn.ndutils.asarray([normalized[lid] for lid in local_leaf_ids])
         
         tree = irn.spatial.BallTree.from_array(samples_matrix, leaf_size=40, metric="euclidean")
-        indices = tree.query_knn(query, k)
+        indices, distances = tree.query_knn(query, k)
         
-        return indices
+        return indices.tolist()
 
     def local_sensitivity(self, local: dict[Union[int, "Uncertain"], float], n: int = 20_000, k: int = 100, method: str = "pearson", *, sampler: Optional[Sampler] = None) -> dict[int, float]:
         """
@@ -728,12 +728,12 @@ def draw_uncertain(u: Uncertain, session: "SampleSession", draw_idx: int | None 
             parents = [eval_node(pid) for pid in node.parents]
             if len(parents) == 1:
                 # For single value operations, create a 1-element array
-                a_arr = irn.asarray([parents[0]])
+                a_arr = irn.ndutils.asarray([parents[0]])
                 result_arr = eval_op(node, a_arr)
                 result = float(result_arr[0]) # type: ignore
             elif len(parents) == 2:
-                a_arr = irn.asarray([parents[0]])
-                b_arr = irn.asarray([parents[1]])
+                a_arr = irn.ndutils.asarray([parents[0]])
+                b_arr = irn.ndutils.asarray([parents[1]])
                 result_arr = eval_op(node, a_arr, b_arr)
                 result = float(result_arr[0]) # type: ignore
             else:

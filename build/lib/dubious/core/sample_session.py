@@ -1,4 +1,4 @@
-import substratum as ss
+import ironforest as irn
 from dataclasses import dataclass, field
 from typing import Dict, Any, Callable, Optional, List, Tuple, Set
 from .sampler import Sampler
@@ -6,6 +6,9 @@ import math
 
 from.context import Context
 from ..umath.stats import erf
+
+
+
 @dataclass
 class SampleSession:
     n: int
@@ -60,36 +63,35 @@ class SampleSession:
     def _make_gaussian_copula_group_sampler(self, ctx: "Context", leaf_ids: List[int]):
         leaf_ids = list(leaf_ids)
         k = len(leaf_ids)
-    
+
         #build correlation matrix
-        C = ss.eye(k)
+        C = irn.ndutils.eye(k)
         for i in range(k):
             for j in range(i + 1, k):
                 rho = ctx.get_corr(leaf_ids[i], leaf_ids[j])
                 C[i, j] = C[j, i] = rho
 
         #coerce user input to valid matrix
-        w, V = ss.linalg.eig(C)
+        w, V = irn.linalg.eig(C)
         w_clipped = w.clip(1e-12, float('inf'))
 
         C_psd = (V * w_clipped) @ (V.transpose())
 
         d = (C_psd.diagonal()).sqrt()
-        C_psd = C_psd / ss.linalg.outer(d, d)
-
+        C_psd = C_psd / irn.linalg.outer(d, d)
 
         #try cholesky, adding jitter if failing
         jitter = 0.0
         cholesky_succeded = False
         for _ in range(5):
             try:
-                L = ss.linalg.cholesky(C_psd + jitter * ss.eye(C_psd.shape[0]))
+                L = irn.linalg.cholesky(C_psd + jitter * irn.ndutils.eye(C_psd.shape[0]))
                 cholesky_succeded = True
                 break
             except ValueError:
                 jitter = 1e-12 if jitter == 0.0 else jitter * 10
         if not cholesky_succeded:
-            w, V = ss.linalg.eig(C_psd)
+            w, V = irn.linalg.eig(C_psd)
             w = w.clip(0.0, float('inf'))
             L = V @ (w.sqrt()).diagonal()
 
