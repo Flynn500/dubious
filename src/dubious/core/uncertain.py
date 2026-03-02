@@ -231,10 +231,10 @@ class Uncertain(Sampleable):
 
         query = irn.ndutils.asarray([normalized[lid] for lid in local_leaf_ids])
         
-        tree = irn.spatial.BallTree.from_array(samples_matrix, leaf_size=40, metric="euclidean")
-        indices, distances = tree.query_knn(query, k)
+        tree = irn.spatial.KDTree.from_array(samples_matrix, leaf_size=40, metric="euclidean")
+        result = tree.query_knn(query, k)
         
-        return indices.tolist()
+        return result.indices.tolist()
 
     def local_sensitivity(self, local: dict[Union[int, "Uncertain"], float], n: int = 20_000, k: int = 100, method: str = "pearson", *, sampler: Optional[Sampler] = None) -> dict[int, float]:
         """
@@ -530,8 +530,6 @@ class Uncertain(Sampleable):
                 stack.extend(node.parents)
         
         return leaves
-    
-
 
 
 def eval_op(node: Node, a: irn.Array, b: Optional[irn.Array] = None) -> irn.Array:
@@ -727,7 +725,6 @@ def draw_uncertain(u: Uncertain, session: "SampleSession", draw_idx: int | None 
         else:
             parents = [eval_node(pid) for pid in node.parents]
             if len(parents) == 1:
-                # For single value operations, create a 1-element array
                 a_arr = irn.ndutils.asarray([parents[0]])
                 result_arr = eval_op(node, a_arr)
                 result = float(result_arr[0]) # type: ignore

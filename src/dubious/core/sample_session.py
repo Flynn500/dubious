@@ -8,7 +8,6 @@ from.context import Context
 from ..umath.stats import erf
 
 
-
 @dataclass
 class SampleSession:
     n: int
